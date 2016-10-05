@@ -1,2 +1,3 @@
 Test of commit.
 Test2
+Test3
