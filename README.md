@@ -1,4 +1,3 @@
-flsuite: A python 2.7 module for Scott's analysis of FLASH simulations
+flsuite is a python 2.7 module for Scott's analysis of FLASH simulations. Primary use case at the moment is for personal projects.
 
-Trying to follow this project layout:
-https://jeffknupp.com/blog/2013/08/16/open-sourcing-a-python-project-the-right-way/
+Created Oct 5, 2016 by Scott Feister.
