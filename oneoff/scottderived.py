@@ -1,7 +1,7 @@
 #!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 """
-scott_derived.py: Import this module to add a few magnetic-field-based derived fields to the yt session
+scottderived.py: Import this module to add a few magnetic-field-based derived fields to the yt session
 
 Created by Scott Feister around Oct 1 2016
 
