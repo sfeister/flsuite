@@ -9,15 +9,16 @@ CHANGELOG:
 2016-10-05 Created shinenew1.py. Copied many things from shinethru3.py and tstest3.py.
 """
 
-import flsuite as fl
 import os
+import numpy as np
 import matplotlib
 matplotlib.use('Agg') # Headless plotting
 import matplotlib.pyplot as plt
 import yt
 yt.enable_parallelism() # Tap into yt's mpi4py parallelism (e.g. now can call via mpirun -np 10 python <blah>.py)
 yt.funcs.mylog.setLevel(30) # This sets the output notification threshold to 30, WARNING. Default is 20, INFO.
-from fl import flyt.morefields # Add a few extra, custom derived fields to FLASH datasets loaded through YT
+import flsuite as fl
+import flsuite.flyt.morefields # Add a few extra, custom derived fields to FLASH datasets loaded through YT
 
 #TODO: Make this modular, so you can get what you need out of it. Could it return a callback?
 def anlzD(ds):
