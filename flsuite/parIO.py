@@ -1,17 +1,22 @@
+#!/bin/python2.7
 # -*- coding: utf-8 -*-
 """
-Created on Fri Sep 16 15:52:46 2016
+parIO.py: Do input and output on flash.par configuration files
 
-@author: Scott
+Created by Scott Feister on Fri Sep 16 15:52:46 2016
+
+This is one of the FLASH i/o functions, which are dedicated to parsing and generating inputs and outputs of FLASH.
 
 Changelog:
 2016-09-19 110 PM first version of file. For help with Mira re-submission automation.
+2016-10-05 Changed name to parIO.py and added to flsuite module
 
 Future work:
 * Extract log_file and basenm from the flash.par
 * Move onto Github
 * Use docopt for filename, log_file etc. input
 * Make python-based flash.par reader/writer
+
 """
 
 import os
