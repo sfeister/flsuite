@@ -1,4 +1,0 @@
-Test of commit.
-Test2
-Test3
-Test4
