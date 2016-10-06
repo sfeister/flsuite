@@ -94,7 +94,7 @@ def anlzT(ts, outdir='.'):
     for sto, ds in ts.piter(storage=storage):
         print "Reading file:", ds
         anlsD = anlzD(ds)
-        plotD(ds, anlsD)
+        plotD(ds, anlsD, outdir=outdir)
         sto.result = anlsD
         sto.result_id = str(ds)
     
