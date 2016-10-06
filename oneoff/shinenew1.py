@@ -7,6 +7,10 @@ Created by Scott Feister on Wed Oct 05 18:01:01 2016
 
 CHANGELOG:
 2016-10-05 Created shinenew1.py. Copied many things from shinethru3.py and tstest3.py.
+
+Example usage:
+time mpirun -np 5 python shinenew1.py
+
 """
 
 import os
@@ -43,7 +47,7 @@ def plotD(ds, anlsD, outdir='.'):
     """
     
     slc = yt.SlicePlot(ds, 'x', 'density')
-    slc.save(sf.subdir(outdir, 'xdensity'))
+    slc.save(sf.subdir(outdir, 'xdensity')) # Known issue: Technically, this can be a race condition among processors of creating this sub-directory
 
     slc = yt.SlicePlot(ds, 'x', 'velz')
     slc.save(sf.subdir(outdir, 'xvelz'))
@@ -90,7 +94,7 @@ def anlzT(ts, outdir='.'):
     for sto, ds in ts.piter(storage=storage):
         print "Reading file:", ds
         anlsD = anlzD(ds)
-        plotD(anlsD)
+        plotD(ds, anlsD)
         sto.result = anlsD
         sto.result_id = str(ds)
     
