@@ -46,18 +46,26 @@ def plotD(ds, anlsD, outdir='.'):
     anlsD: Output of anlzD(ds)
     """
     
-    slc = yt.SlicePlot(ds, 'x', 'density')
-    slc.save(sf.subdir(outdir, 'xdensity')) # Known issue: Technically, this can be a race condition among processors of creating this sub-directory
+    # Slice plots
+    slc = yt.SlicePlot(ds, 'x', ['density', 'velz', 'magtot'])
+    slc.set_log('velz', False)
+    slc.set_cmap('velz', 'RdBu')
+    slc.set_unit('velz', 'um/ps')
+    slc.set_zlim('velz', -1.0, 1.0)
+    slc.set_zlim('density', 1e-6, 1e1)
+    slc.set_font({'family': 'sans-serif', 'style': 'italic',
+        'weight': 'bold', 'size': 24})
+    # Projection plots
+    slc.annotate_title('Slice at X=0')
+    slc.save(sf.subdir(outdir, 'xslice')) # Known issue: Technically, this can be a race condition among processors of creating this sub-directory. In practice, it's probably fine most of the time.
 
-    slc = yt.SlicePlot(ds, 'x', 'velz')
-    slc.save(sf.subdir(outdir, 'xvelz'))
-
-    slc = yt.SlicePlot(ds, 'x', 'depo')
-    slc.save(sf.subdir(outdir, 'xdepo'))
-
-    slc = yt.SlicePlot(ds, 'x', 'magtot')
-    slc.save(sf.subdir(outdir, 'xmagtot'))
-
+    proj = yt.ProjectionPlot(ds, 'x', ['depo'], method='mip')
+    proj.set_zlim('depo', 1e-15, 1e14)
+    proj.set_font({'family': 'sans-serif', 'style': 'italic',
+        'weight': 'bold', 'size': 24})
+    proj.annotate_title('Projection through X, maximum value')
+    proj.save(sf.subdir(outdir, 'xmip'))
+    
     return 0 # TODO: Return the figure handles?
 
 #TODO: This will eventually be made modular, but tied in with anlzD
@@ -118,7 +126,7 @@ if __name__ == "__main__":
     # Note that this will run in parallel, so no prints please
     datdir = r'/gpfs/mira-fs0/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND' # Directory holding HDF5 FLASH outputs
     basenm = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
-    fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_??[0,5]0') # yt-time-series filename pattern for plot files
+    fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_????') # yt-time-series filename pattern for plot files
 
     outdir = r'/home/sfeister/myouts/TDYNO_BAND' # Folder for outputs
     ts = yt.load(fnpatt) # Load a time series
