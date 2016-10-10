@@ -146,29 +146,30 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, pitdiam_um = 10,
     ct = (dat_cm[:,0] > xmin) & (dat_cm[:,0] < xmax) & (dat_cm[:,1] > ymin) & (dat_cm[:,1] < ymax)
     subdat_cm = dat_cm[ct,:]
     numpits = subdat_cm.shape[0] # Total number of pits to be plotted
-    print "Making the pits plot (" + str(numpits) + " pits)..."
-    
-    fig = plt.figure(2)
-    ax = plt.subplot(111)
-    pitrad_cm = (pitdiam_um / 2) * 1e-4 # Pit diameter converted to centimeters
-    for i in range(numpits):
-    	spot = mpatches.Circle((subdat_cm[i,0], subdat_cm[i,1]), radius=pitrad_cm, fill=True, edgecolor="blue", linestyle="-")
-    	ax.add_patch(spot)
-    
-    plt.title("CR39 bin with the most protons")
-    plt.xlim(xmin, xmax)
-    plt.ylim(ymin, ymax)
-    plt.xlabel('CR39, X (cm)')
-    plt.ylabel('CR39, Y (cm)')
-    
-    #colors = 0.5 * np.ones(subdat_cm.shape[0])
-    #area = 5
-    #plt.scatter(subdat_cm[:,0], subdat_cm[:,1], s=area, c=colors, alpha=0.5)
-    #plt.scatter([0], [0], s=area, c=colors, alpha=0.5)
-    
-    ax.set_aspect('equal')
-    plt.savefig(os.path.join(PIdir, "SamplePits.png"))
-    print "Done!"
+#    print "Making the pits plot (" + str(numpits) + " pits)..."
+#    
+#    
+#    fig = plt.figure(2)
+#    ax = plt.subplot(111)
+#    pitrad_cm = (pitdiam_um / 2) * 1e-4 # Pit diameter converted to centimeters
+#    for i in range(numpits):
+#    	spot = mpatches.Circle((subdat_cm[i,0], subdat_cm[i,1]), radius=pitrad_cm, fill=True, edgecolor="blue", linestyle="-")
+#    	ax.add_patch(spot)
+#    
+#    plt.title("CR39 bin with the most protons")
+#    plt.xlim(xmin, xmax)
+#    plt.ylim(ymin, ymax)
+#    plt.xlabel('CR39, X (cm)')
+#    plt.ylabel('CR39, Y (cm)')
+#    
+#    #colors = 0.5 * np.ones(subdat_cm.shape[0])
+#    #area = 5
+#    #plt.scatter(subdat_cm[:,0], subdat_cm[:,1], s=area, c=colors, alpha=0.5)
+#    #plt.scatter([0], [0], s=area, c=colors, alpha=0.5)
+#    
+#    ax.set_aspect('equal')
+#    plt.savefig(os.path.join(PIdir, "SamplePits.png"))
+#    print "Done!"
     
     # Big ole scatter plot of all pits
     #fig = plt.figure(3)
@@ -184,4 +185,8 @@ if __name__ == "__main__":
     PIdirs = [x[0] for x in os.walk(r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE")][1:]
     #PIdir = r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE\PIN-10-1p0-15"
     for PIdir in PIdirs:
-        piHugeAnalysis(PIdir, basenm=r"tdyno2016_", simname='TDYNO_BAND')
+        print PIdir
+        if not os.path.isfile(os.path.join(PIdir, "Radiograph.png")):
+            piHugeAnalysis(PIdir, basenm=r"tdyno2016_", simname='TDYNO_BAND')
+        else:
+            print "Skipping..."
