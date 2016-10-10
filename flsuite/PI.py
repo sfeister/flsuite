@@ -170,16 +170,18 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, pitdiam_um = 10,
     plt.savefig(os.path.join(PIdir, "SamplePits.png"))
     print "Done!"
     
-    fig = plt.figure(3)
-    plt.scatter(dat_cm[:,0], dat_cm[:,1], s=1, alpha=0.1)
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.savefig(os.path.join(PIdir, "AllPits.png"))
+    # Big ole scatter plot of all pits
+    #fig = plt.figure(3)
+    #plt.scatter(dat_cm[:,0], dat_cm[:,1], s=1, alpha=0.1)
+    #plt.xlabel("X")
+    #plt.ylabel("Y")
+    #plt.savefig(os.path.join(PIdir, "AllPits.png"))
 
     return 0
     
 if __name__ == "__main__":
     ## USER PARAMETERS
-    PIdir = r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\3MeV1deg"
-    
-    piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname='TDYNO_BAND')
+    PIdirs = [x[0] for x in os.walk(r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE")][1:]
+    #PIdir = r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE\PIN-10-1p0-15"
+    for PIdir in PIdirs:
+        piHugeAnalysis(PIdir, basenm=r"tdyno2016_", simname='TDYNO_BAND')
