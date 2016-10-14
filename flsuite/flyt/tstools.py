@@ -26,10 +26,8 @@ matplotlib.use('Agg') # Headless plotting
 import matplotlib.pyplot as plt
 import yt
 yt.enable_parallelism() # Tap into yt's mpi4py parallelism (e.g. now can call via mpirun -np 10 python <blah>.py)
-yt.funcs.mylog.setLevel(30) # This sets the output notification threshold to 30, WARNING. Default is 20, INFO.
 import flsuite as fl
-import flsuite.flyt.morefields # Add a few extra, custom derived fields to FLASH datasets loaded through YT
-import sftools as sf
+import flsuite.sftools as sf
 import numbers
 
 # TODO: Incorporate this into the new analysis schema
@@ -121,6 +119,8 @@ def anlzT(ts, anlzD, outdir='.', plotT=None):
         if not isinstance(anlsD, dict): # If for some reason it returned something other than a dictionary
             anlsD = {'anlzD_out':anlsD}
         
+        anlsD["ds_id"] = str(ds)
+        
         sto.result = anlsD
         sto.result_id = str(ds)
         
@@ -132,7 +132,6 @@ def anlzT(ts, anlzD, outdir='.', plotT=None):
     # For example, numbers and arrays will be passed on as into larger numpy arrays
     anlsD = storage[sortd[0]] # A template for anlsD; not necessarily the 0th object
     anlsT = {}
-    anlsT["ds_id"] = [None]*numfiles
     for k in anlsD.keys(): # Iterate over key, value pairs for anlsD        
         val = anlsD[k]
         if isinstance(val, numbers.Number): # Single number -> N-element 1D NumPy array
