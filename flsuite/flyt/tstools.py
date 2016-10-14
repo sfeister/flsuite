@@ -15,6 +15,7 @@ CHANGELOG:
 TODO:
 * Tie together plotT and anlsD, perhaps making a class!
 * Enable further modularity to allow multiple instances of anlsD, plotT to be included (e.g. allows a list of functions for each)
+   Possibly, even have the anlsD allow anlsT inputs (for auto-scaling, etc.). Or, allow classes manually setting parameters like mins, maxes, etc. Could become a monstrosity if that, though!
 """
 
 import os
