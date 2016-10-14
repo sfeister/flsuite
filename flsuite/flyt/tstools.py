@@ -150,7 +150,7 @@ def anlzT(ts, anlzD, outdir='.', plotT=None):
     
     if yt.is_root():
         # Dump result to pickled output
-        print("All files completed and analysis outputs re-organized. Pickling anlsT...
+        print("All files completed and analysis outputs re-organized. Pickling anlsT...")
         pickle.dump( anlsT, open( os.path.join(outdir, "anlsT.p"), "wb" ) )
         
         # Make the plots
