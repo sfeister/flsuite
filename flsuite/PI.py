@@ -144,10 +144,11 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         ax.text(0.05, 0.95, tstring, fontsize=18, color='black', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
         ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
     
-        plt.savefig(os.path.join(PIdir, "Radiograph_" + tlabel + ".png"), dpi=300)
+        plt.savefig(os.path.join(outdir, "Radiograph_" + tlabel + ".png"), dpi=300)
         
         
         if dat.shape[1] >= 5:
+            print("Making Energy spectrum plot")
             velxyz_mps = dat[:,(3,4,5)] * 1e-2 # Fourth, fifth, sixth columns are vx, vy, vz in cm/s. Convert to m/s
             vel_mps = np.sqrt(np.sum(velxyz_mps**2, 0)) # Magnitude of velocity, in m/s
             gamma = 1/np.sqrt(1 - vel_mps**2 / sc.c**2) # Relativistic gamma factor
@@ -160,8 +161,9 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             plt.title("Final proton spectrum")
             plt.xlabel('Energy (MeV)')
             plt.ylabel('Number (a.u.)')
-            plt.savefig(os.path.join(PIdir, "ESpec_" + tlabel + ".png"), dpi=300)
-
+            plt.savefig(os.path.join(outdir, "ESpec_" + tlabel + ".png"), dpi=300)
+        else:
+            print("No velocity data found; perhaps this was a pre-Oct2016 version of FLASH proton imaging.")
 #        ## Figure 2 & 3: Other stuff
 #        #TODO: Plot the densest cell in CR-39 fashion??
 #        
