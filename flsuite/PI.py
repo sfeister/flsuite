@@ -92,6 +92,10 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         
         # Read in the proton file
         dat = np.genfromtxt(fn)
+        if len(dat) < 1:
+            print("Empty file : " + fn + ". Moving on...")
+            continue
+        
         dat_cm = (dat - 0.5) * width_cm # Convert scatter points from 0 to 1 grid up to centimeters
     
         ##################### DETAILED ANALYSIS ###################
