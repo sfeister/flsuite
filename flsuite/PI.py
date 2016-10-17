@@ -67,7 +67,10 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
     ## All of this could somehow be packaged into something higher-level? Like, maybe a reader function? Not sure...
     # Read in a few files    
     #maindict = piRead(os.path.join(PIdir, basenm + r"ProtonImagingMainPrint.txt"))
-    detdict = piRead(os.path.join(PIdir, basenm + r"ProtonDetectorsPrint.txt"))
+    try:
+        detdict = piRead(os.path.join(PIdir, basenm + r"ProtonDetectorsPrint.txt"))
+    except:
+        detdict = piRead(os.path.join(PIdir, basenm + r"ProtonImagingDetectors.txt"))
     beamdict = piRead(os.path.join(PIdir, basenm + r"ProtonBeamsPrint.txt"))
 
     # Get some important variables from the read-ins
