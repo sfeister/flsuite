@@ -43,7 +43,7 @@ def piRead(fn):
     return d
 
 # Expect this to be replaced with something more elegant soon.
-def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, pitdiam_um = 10, bin_um = 332.6):
+def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6):
     """Performs a massive, custom analysis. Outputs plots in PIdir
     
     PIdir: Path to folder containing the PI outputs like blahblah_ProtonImagingMainPrint    
@@ -56,6 +56,9 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, pitdiam_um = 10,
 
     if not simname:
         simname=basenm
+    
+    if not outdir:
+        outdir=PIdir
     
     ################## GENERAL ANALYSIS ####################
      # CR39 pit and readout properties
@@ -78,7 +81,6 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, pitdiam_um = 10,
 
     # Loop over all the functions
     for fn in fns:
-        fn = fns[0]
         p = re.compile(basenm + r'ProtonDetectorFile([0-9]+)_(\S*)') # Strip timestamp off filename end, e.g. tdyno2016PI_ProtonDetectorFile01_2.200E-08 ==> 2.2000E-08
         m = p.findall(fn)
         #detnum = int(m[0][0]) # Detector ID number (e.g. 1, 2, 3,..)
