@@ -157,8 +157,8 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             print("Min of velxyz_mps:", velxyz_mps.min())
             print("NaN in velxyz_mps:", np.isnan(velxyz_mps).sum())
 
-            gamma = 1/np.sqrt(1 - vel_mps**2 / sc.c**2) # Relativistic gamma factor
-            print("Gamma factor, on average: " + str(np.mean(gamma)))
+            gamma = 1/np.sqrt(1 - (vel_mps**2 / sc.c**2)) # Relativistic gamma factor
+            print("Mean gamma factor: " + str(np.mean(gamma)))
             KE_J = (gamma - 1) * sc.m_p * sc.c**2  # Relativistic energy, assuming proton mass
             KE_MeV = (KE_J / sc.e) * 1e-6
             print("Shape of KE_MeV: ", KE_MeV.shape)
