@@ -143,7 +143,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         Estring =  "{:.1f}".format(protMeV) + " MeV" # Proton energy string
         ax.text(0.05, 0.95, tstring, fontsize=18, color='black', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
         ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
-    
+        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
         plt.savefig(os.path.join(outdir, "Radiograph_" + tlabel + ".png"), dpi=300)
         
         
@@ -162,12 +162,13 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             KE_MeV = (KE_J / sc.e) * 1e-6
             print("Shape of KE_MeV: ", KE_MeV.shape)
 
-            plt.figure(2)
+            fig = plt.figure(2)
             plt.clf()
             n, bins, patches = plt.hist(KE_MeV, 50, normed=True, facecolor='green', alpha=0.75)
             plt.title("Final proton spectrum")
             plt.xlabel('Energy (MeV)')
             plt.ylabel('Number (a.u.)')
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
             plt.savefig(os.path.join(outdir, "ESpec_" + tlabel + ".png"), dpi=300)
         else:
             print("No velocity data found; perhaps this was a pre-Oct2016 version of FLASH proton imaging.")
