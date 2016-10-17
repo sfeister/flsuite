@@ -185,7 +185,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             
             fig = plt.figure(4)
             plt.clf()
-            n, bins, patches = plt.hist((KE_MeV - protMeV)*1e3, 1000, range=(-250, 250), normed=True, log=True facecolor='green', alpha=0.75)
+            n, bins, patches = plt.hist((KE_MeV - protMeV)*1e3, 1000, range=(-250, 250), normed=True, log=True, facecolor='green', alpha=0.75)
             plt.title("Final proton spectrum (YLog)")
             plt.xlabel('Energy shift (keV)')
             plt.ylabel('Number (a.u.)')
