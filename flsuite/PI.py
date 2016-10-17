@@ -92,7 +92,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         
         # Read in the proton file
         dat = np.genfromtxt(fn)
-        if len(np.atleast_1d(dat.flatten())) < 1:
+        if len(np.atleast_1d(dat.flatten())) < 2:
             print("File contents empty : " + fn + ". Moving on...")
             continue
         
