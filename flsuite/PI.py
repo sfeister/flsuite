@@ -158,13 +158,15 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             print("NaN in velxyz_mps:", np.isnan(velxyz_mps).sum())
 
             gamma = 1/np.sqrt(1 - vel_mps**2 / sc.c**2) # Relativistic gamma factor
+            print("Gamma factor, on average: " + str(np.mean(gamma)))
             KE_J = (gamma - 1) * sc.m_p * sc.c**2  # Relativistic energy, assuming proton mass
             KE_MeV = (KE_J / sc.e) * 1e-6
             print("Shape of KE_MeV: ", KE_MeV.shape)
 
+            histrange = protMeV + np.array([-2, 2]) # Range for the histogram, in MeV
             fig = plt.figure(2)
             plt.clf()
-            n, bins, patches = plt.hist(KE_MeV, 50, normed=True, facecolor='green', alpha=0.75)
+            n, bins, patches = plt.hist(KE_MeV, 50, range=histrange, normed=True, facecolor='green', alpha=0.75)
             plt.title("Final proton spectrum")
             plt.xlabel('Energy (MeV)')
             plt.ylabel('Number (a.u.)')
