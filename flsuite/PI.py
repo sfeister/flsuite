@@ -166,12 +166,21 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             histrange = protMeV + np.array([-0.25, 0.25]) # Range for the histogram, in MeV
             fig = plt.figure(2)
             plt.clf()
-            n, bins, patches = plt.hist(KE_MeV, 50, range=histrange, normed=True, facecolor='green', alpha=0.75)
+            n, bins, patches = plt.hist(KE_MeV, 100, range=histrange, normed=True, facecolor='green', alpha=0.75)
             plt.title("Final proton spectrum")
             plt.xlabel('Energy (MeV)')
             plt.ylabel('Number (a.u.)')
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
             plt.savefig(os.path.join(outdir, "ESpec_" + tlabel + ".png"), dpi=300)
+
+            fig = plt.figure(3)
+            plt.clf()
+            n, bins, patches = plt.hist(KE_MeV, 100, normed=True, facecolor='green', alpha=0.75)
+            plt.title("Final proton spectrum")
+            plt.xlabel('Energy (MeV)')
+            plt.ylabel('Number (a.u.)')
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
+            plt.savefig(os.path.join(outdir, "ESpecAuto_" + tlabel + ".png"), dpi=300)
         else:
             print("No velocity data found; perhaps this was a pre-Oct2016 version of FLASH proton imaging.")
 #        ## Figure 2 & 3: Other stuff
