@@ -171,7 +171,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             plt.xlabel('Energy (MeV)')
             plt.ylabel('Number (a.u.)')
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
-            plt.savefig(os.path.join(outdir, "ESpec_" + tlabel + ".png"), dpi=300)
+            plt.savefig(os.path.join(outdir, "ProtSpec_" + tlabel + ".png"), dpi=300)
 
             fig = plt.figure(3)
             plt.clf()
@@ -180,7 +180,18 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             plt.xlabel('Energy shift (keV)')
             plt.ylabel('Number (a.u.)')
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
-            plt.savefig(os.path.join(outdir, "EShiftAuto_" + tlabel + ".png"), dpi=300)
+            plt.savefig(os.path.join(outdir, "ProtShiftAuto_" + tlabel + ".png"), dpi=300)
+            histrange = protMeV + np.array([-0.25, 0.25]) # Range for the histogram, in MeV
+            
+            fig = plt.figure(4)
+            plt.clf()
+            n, bins, patches = plt.hist((KE_MeV - protMeV)*1e3, 1000, range=(-250, 250), normed=True, log=True facecolor='green', alpha=0.75)
+            plt.title("Final proton spectrum (YLog)")
+            plt.xlabel('Energy shift (keV)')
+            plt.ylabel('Number (a.u.)')
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
+            plt.savefig(os.path.join(outdir, "ProtShiftLog_" + tlabel + ".png"), dpi=300)
+
         else:
             print("No velocity data found; perhaps this was a pre-Oct2016 version of FLASH proton imaging.")
 #        ## Figure 2 & 3: Other stuff
