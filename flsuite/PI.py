@@ -163,10 +163,10 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             KE_MeV = (KE_J / sc.e) * 1e-6
             print("Shape of KE_MeV: ", KE_MeV.shape)
 
-            histrange = protMeV + np.array([-0.5, 0.5]) # Range for the histogram, in MeV
+            histrange = protMeV + np.array([-0.25, 0.25]) # Range for the histogram, in MeV
             fig = plt.figure(2)
             plt.clf()
-            n, bins, patches = plt.hist(KE_MeV, 200, range=histrange, normed=True, facecolor='green', alpha=0.75)
+            n, bins, patches = plt.hist(KE_MeV, 100, range=histrange, normed=True, facecolor='green', alpha=0.75)
             plt.title("Final proton spectrum")
             plt.xlabel('Energy (MeV)')
             plt.ylabel('Number (a.u.)')
@@ -176,7 +176,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             fig = plt.figure(3)
             plt.clf()
             n, bins, patches = plt.hist(KE_MeV, 100, normed=True, facecolor='green', alpha=0.75)
-            plt.title("Final proton spectrum")
+            plt.title("Final proton spectrum (auto-ranged)")
             plt.xlabel('Energy (MeV)')
             plt.ylabel('Number (a.u.)')
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
