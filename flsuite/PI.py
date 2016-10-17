@@ -22,7 +22,7 @@ matplotlib.use('Agg') # Display choice "Agg" for headless servers
 
 import re
 import numpy as np
-
+import scipy.constants as sc
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches # Using this example to draw circles: http://matplotlib.org/examples/shapes_and_collections/artist_reference.html
 import sftools as sf
@@ -92,11 +92,11 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         
         # Read in the proton file
         dat = np.genfromtxt(fn)
-        if len(np.atleast_1d(dat.flatten())) < 2:
+        if len(np.atleast_1d(dat.flatten())) < 1:
             print("File contents empty : " + fn + ". Moving on...")
             continue
         
-        dat_cm = (dat - 0.5) * width_cm # Convert scatter points from 0 to 1 grid up to centimeters
+        xy_cm = (dat[:,(0,1)] - 0.5) * width_cm # Convert scatter points from 0 to 1 grid up to centimeters
     
         ##################### DETAILED ANALYSIS ###################
         ## Make some plots
@@ -111,7 +111,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         # Bin the data, according to the square bin edge size
         # Following example at: http://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram2d.html
         bins_cm = np.arange(-width_cm/2, width_cm/2, bin_um*1e-4) # 1D array of bin edges, in centimetres
-        H, xedges, yedges = np.histogram2d(dat_cm[:,0], dat_cm[:,1], bins=bins_cm)
+        H, xedges, yedges = np.histogram2d(xy_cm[:,0], xy_cm[:,1], bins=bins_cm)
         
         print "Making PI plot..."
         ## Figure 1: Main radiograph
@@ -146,6 +146,22 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
     
         plt.savefig(os.path.join(PIdir, "Radiograph_" + tlabel + ".png"), dpi=300)
         
+        
+        if dat.shape[1] >= 5:
+            velxyz_mps = dat[:,(3,4,5)] * 1e-2 # Fourth, fifth, sixth columns are vx, vy, vz in cm/s. Convert to m/s
+            vel_mps = np.sqrt(np.sum(velxyz_mps**2, 0)) # Magnitude of velocity, in m/s
+            gamma = 1/np.sqrt(1 - vel_mps**2 / sc.c**2) # Relativistic gamma factor
+            KE_J = (gamma - 1) * sc.m_p * sc.c**2  # Relativistic energy, assuming proton mass
+            KE_MeV = (KE_J / sc.e) * 1e-6
+            
+            plt.figure(2)
+            plt.clf()
+            n, bins, patches = plt.hist(KE_MeV, 50, normed=True, facecolor='green', alpha=0.75)
+            plt.title("Final proton spectrum")
+            plt.xlabel('Energy (MeV)')
+            plt.ylabel('Number (a.u.)')
+            plt.savefig(os.path.join(PIdir, "ESpec_" + tlabel + ".png"), dpi=300)
+
 #        ## Figure 2 & 3: Other stuff
 #        #TODO: Plot the densest cell in CR-39 fashion??
 #        
