@@ -163,7 +163,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             KE_MeV = (KE_J / sc.e) * 1e-6
             print("Shape of KE_MeV: ", KE_MeV.shape)
 
-            histrange = protMeV + np.array([-2, 2]) # Range for the histogram, in MeV
+            histrange = protMeV + np.array([-0.25, 0.25]) # Range for the histogram, in MeV
             fig = plt.figure(2)
             plt.clf()
             n, bins, patches = plt.hist(KE_MeV, 50, range=histrange, normed=True, facecolor='green', alpha=0.75)
