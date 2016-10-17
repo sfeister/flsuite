@@ -150,7 +150,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         if dat.shape[1] >= 5:
             print("Making Energy spectrum plot")
             velxyz_mps = dat[:,(3,4,5)] * 1e-2 # Fourth, fifth, sixth columns are vx, vy, vz in cm/s. Convert to m/s
-            vel_mps = np.sqrt(np.sum(velxyz_mps**2, 0)) # Magnitude of velocity, in m/s
+            vel_mps = np.sqrt(np.sum(velxyz_mps**2, 1)) # Magnitude of velocity, in m/s
             print("Shape of velxyz_mps: ", velxyz_mps.shape)
             print("Shape of vel_mps: ", vel_mps.shape)
             print("Max of velxyz_mps:", velxyz_mps.max())
