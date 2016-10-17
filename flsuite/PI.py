@@ -175,12 +175,12 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
 
             fig = plt.figure(3)
             plt.clf()
-            n, bins, patches = plt.hist(KE_MeV, 100, normed=True, facecolor='green', alpha=0.75)
-            plt.title("Final proton spectrum (auto-ranged)")
-            plt.xlabel('Energy (MeV)')
+            n, bins, patches = plt.hist((KE_MeV - protMeV)*1e3, 100, normed=True, facecolor='green', alpha=0.75)
+            plt.title("Proton energy shift (auto-ranged)")
+            plt.xlabel('Energy shift (keV)')
             plt.ylabel('Number (a.u.)')
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
-            plt.savefig(os.path.join(outdir, "ESpecAuto_" + tlabel + ".png"), dpi=300)
+            plt.savefig(os.path.join(outdir, "EShiftAuto_" + tlabel + ".png"), dpi=300)
         else:
             print("No velocity data found; perhaps this was a pre-Oct2016 version of FLASH proton imaging.")
 #        ## Figure 2 & 3: Other stuff
