@@ -182,10 +182,11 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
             plt.savefig(os.path.join(outdir, "ProtShiftAuto_" + tlabel + ".png"), dpi=300)
             histrange = protMeV + np.array([-0.25, 0.25]) # Range for the histogram, in MeV
+            np.savez(os.path.join(outdir, "ProtShiftAuto_" + tlabel + ".npz"), n=n, bins=bins, protMeV=protMeV)
             
             fig = plt.figure(4)
             plt.clf()
-            n, bins, patches = plt.hist((KE_MeV - protMeV)*1e3, 1000, range=(-250, 250), normed=True, log=True, facecolor='green', alpha=0.75)
+            n, bins, patches = plt.hist((KE_MeV - protMeV)*1e3, 1000, range=(-30, 30), normed=True, log=True, facecolor='green', alpha=0.75)
             plt.title("Final proton spectrum (YLog)")
             plt.xlabel('Energy shift (keV)')
             plt.ylabel('Number (a.u.)')
