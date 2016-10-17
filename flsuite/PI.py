@@ -151,10 +151,17 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             print("Making Energy spectrum plot")
             velxyz_mps = dat[:,(3,4,5)] * 1e-2 # Fourth, fifth, sixth columns are vx, vy, vz in cm/s. Convert to m/s
             vel_mps = np.sqrt(np.sum(velxyz_mps**2, 0)) # Magnitude of velocity, in m/s
+            print("Shape of velxyz_mps: ", velxyz_mps.shape)
+            print("Shape of vel_mps: ", vel_mps.shape)
+            print("Max of velxyz_mps:", velxyz_mps.max())
+            print("Min of velxyz_mps:", velxyz_mps.min())
+            print("NaN in velxyz_mps:", np.isnan(velxyz_mps).sum())
+
             gamma = 1/np.sqrt(1 - vel_mps**2 / sc.c**2) # Relativistic gamma factor
             KE_J = (gamma - 1) * sc.m_p * sc.c**2  # Relativistic energy, assuming proton mass
             KE_MeV = (KE_J / sc.e) * 1e-6
-            
+            print("Shape of KE_MeV: ", KE_MeV.shape)
+
             plt.figure(2)
             plt.clf()
             n, bins, patches = plt.hist(KE_MeV, 50, normed=True, facecolor='green', alpha=0.75)
