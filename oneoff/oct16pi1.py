@@ -14,11 +14,11 @@ import sftools as sf
 
 if __name__ == "__main__":
     PIroot = r"/home/sfeister/tzef/NIF/TDYNO_BAND/PINHOLE/SCRIPT1"
-    outroot = r"/home/sfeister/
+    outroot = r"/gpfs/mira-home/sfeister/myouts/TDYNO_BAND/PI"
     dirnames = [r"RUN1", r"RUN2"]
     simnames = [r"TDYNO_BAND_elec", r"TDYNO_BAND_no_elec"]
     for i in range(len(dirnames)):
         PIdir = os.path.join(PIroot, dirnames[i])
         outdir = sf.subdir(outroot, simnames[i])
         print("Analyzing directory: " + PIdir)
-        piHugeAnalysis(PIdir, basenm=r"tdyno2016_", simname=simnames[i])
+        piHugeAnalysis(PIdir, basenm=r"tdyno2016_", simname=simnames[i], outdir=outdir)

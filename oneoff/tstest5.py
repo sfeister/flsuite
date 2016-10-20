@@ -27,24 +27,26 @@ def anlzD(ds, outdir='.'):
 
     anlsD = {}
     anlsD['times_ns'] = ds.current_time.in_units('ns').v
-    anlsD['z_line'], anlsD['velz_line'] = flyt.lineout(ds, field='velz', axis=2)
+    anlsD['z_line'], anlsD['velz_line'] = flyt.lineout(ds, field='velz', axis=2, npts=2000)
 
     return anlsD
 
 def plotT(anlsT, outdir='.'):
   
-    plt.figure(2)
+    fig = plt.figure(2)
     plt.clf()
-    xgv = anlsT['z_line'][0]*1e4 # xgv in microns
+    xgv = anlsT['z_line'][0]*1e1 # xgv in mm
     tgv = anlsT['times_ns']
-    vmin = -np.max(np.abs(anlsT['velz_line']))
-    vmax = np.max(np.abs(anlsT['velz_line']))
+    vmax = 2*np.mean(np.abs(anlsT['velz_line']))
+    vmin = -vmax
     ax = plt.subplot(111)
-    ax.pcolorfast((tgv[0], tgv[-1]), (xgv[0], xgv[-1]), anlsT['velz_line'].T, vmin=vmin, vmax=vmax, cmap='RdBu')
+    cax = ax.pcolorfast((tgv[0], tgv[-1]), (xgv[0], xgv[-1]), anlsT['velz_line'].T, vmin=vmin, vmax=vmax, cmap='RdBu')
     ax.set_xlabel("Time (ns)")
-    ax.set_ylabel("Z (um)")
-    plt.colorbar()
-    plt.savefig(os.path.join(outdir, "timeplot.png"))
+    ax.set_ylabel("Z (mm)")
+    cbar = fig.colorbar(cax)
+    cbar.ax.set_ylabel("Velz (linear, a.u.)")
+    ax.set_title("Velz lineout X=Y=0, through time")
+    plt.savefig(os.path.join(outdir, "timeplot.png"), dpi=300)
 
     return anlsT
 
@@ -57,3 +59,4 @@ if __name__ == "__main__":
     outdir = r'/home/sfeister/myouts/TDYNO_BAND' # Folder for outputs
     ts = yt.load(fnpatt)
     anlsT = tst.anlzT(ts, anlzD, outdir=outdir, plotT=plotT)
+

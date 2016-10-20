@@ -124,8 +124,23 @@ def anlzT(ts, outdir='.'):
 
 if __name__ == "__main__":
     # Note that this will run in parallel, so no prints please
-    datdir = r'/gpfs/mira-fs0/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND' # Directory holding HDF5 FLASH outputs
+    # simname # Can be anything. Will get stamped on the plots and set the name of outdir. No spaces, please.
+    # datdir # Directory holding HDF5 FLASH outputs
+    # basenm # Prefix name of the HDF5 FLASH outputs, ending with "_"
+    
+    simname = "OMEGA_NLUF6"
+    datdir = r'/gpfs/mira-fs1/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1'
+    basenm = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+
+    simname = "NIF_TDYNO_200KJ"
+    datdir = r'/gpfs/mira-fs0/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
     basenm = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+
+    simname = "NIF_TDYNO_BAND"
+    datdir = r'/gpfs/mira-fs1/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1'
+    basenm = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+
+    
     fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_????') # yt-time-series filename pattern for plot files
 
     outdir = r'/home/sfeister/myouts/TDYNO_BAND' # Folder for outputs
