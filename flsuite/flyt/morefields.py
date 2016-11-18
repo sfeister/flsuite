@@ -13,14 +13,15 @@ Datasets loaded before this module is imported are unaffected.
 CHANGELOG:
 2016-10-05 Changed name from scottderived.py to morefields.py, moved into the flsuite.flyt sub-module
 2016-10-20 Added several more fields, including hooks for kinetic and magnetic energy densities (B**2)
+2016-11-18 Added abar (mass number), zbar (atomic number) based on Petros' definitions of 'ye  ', 'sumy' -SKF
 
 TODO:
-* Add magnetic field energy
-* Look at what Anthony already wrote; how much of this is already finished there?
+* Fix temperature units
+* Add nion from Anthony's equation: return data['dens'] * data['sumy'] * 6.022E23
 """
 
 from yt import derived_field
-#from yt.units import dimensions
+from yt.units import centimeter, second 
 
 @derived_field(name="magtot", units="code_magnetic")
 def _magtot(field, data): # Magnitude of the magnetic field vector, returned in code units
@@ -43,5 +44,17 @@ def _cellKE(field, data): # Classical kinetic energy of each cell (KE = 1/2 m v^
     return 0.5 * data['cell_mass'] * (data['velx']**2 + data['vely']**2 + data['velz']**2)
     
 @derived_field(name="abar", units="dimensionless")
-def _abar(field, data): # Atomic mass
+def _abar(field, data): # Mass number
     return 1.0 / data['sumy']
+    
+@derived_field(name="zbar", units="dimensionless")
+def _zbar(field, data): # Atomic number
+    return data['ye  '] / data['sumy']
+
+@derived_field(name="cs", units="cm/s")
+def _cs(field, data): # Sound speed, calculated from Petros' 2016 paper table; converted temps to eV
+    return (centimeter / second) * 9.80e5 * (data['zbar'] * data['tele'].v/11604.525 + (5./3.) * data['tion'].v/11604.525)**0.5 / data['abar']**0.5
+
+@derived_field(name="mach", units="dimensionless")
+def _mach(field, data): # Mach number
+    return data['veltot'] / data['cs']

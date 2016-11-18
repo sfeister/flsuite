@@ -65,11 +65,13 @@ def anlzD(ds, outdir='.'):
     _, anlsD['line1_dens'] = flyt.lineout(ds, field='dens', axis=2, npts=2000)
     _, anlsD['line1_KEdens'] = flyt.lineout(ds, field='KEdens', axis=2, npts=2000)
     _, anlsD['line1_magsqr'] = flyt.lineout(ds, field='magsqr', axis=2, npts=2000)
+    _, anlsD['line1_cs'] = flyt.lineout(ds, field='cs', axis=2, npts=2000)
 
     dd = ds.all_data()
     anlsD['line1_velz_units'] = str(dd['velz'].units) # TODO: Better. Include the units in the lineout call
     anlsD['line1_zgv_units'] = str(dd['z'].units) #TODO: Better
     anlsD['line1_dens_units'] = str(dd['dens'].units) #TODO: Better
+    anlsD['line1_cs_units'] = str(dd['cs'].units) #TODO: Better
     
     
     ## TODO: Organize this fatter and fatter lineout section. Also, fix the fatline function so it takes all the fields at once (minimize overhead)
@@ -80,6 +82,7 @@ def anlzD(ds, outdir='.'):
     _, anlsD['line_500um_dens'] = flyt.fatline(ds, rad_mm, fld='dens', npts=2000)
     _, anlsD['line_500um_KEdens'] = flyt.fatline(ds, rad_mm, fld='KEdens', npts=2000)
     _, anlsD['line_500um_magsqr'] = flyt.fatline(ds, rad_mm, fld='magsqr', npts=2000)
+    _, anlsD['line_500um_cs'] = flyt.fatline(ds, rad_mm, fld='cs', npts=2000)
 
     # Extract an even fatter lineout at X=Y=0 for similar quantities
     rad_mm = 2.0 # Radius of the lineout cylinder
@@ -88,6 +91,7 @@ def anlzD(ds, outdir='.'):
     _, anlsD['line_2000um_dens'] = flyt.fatline(ds, rad_mm, fld='dens', npts=2000)
     _, anlsD['line_2000um_KEdens'] = flyt.fatline(ds, rad_mm, fld='KEdens', npts=2000)
     _, anlsD['line_2000um_magsqr'] = flyt.fatline(ds, rad_mm, fld='magsqr', npts=2000)
+    _, anlsD['line_2000um_cs'] = flyt.fatline(ds, rad_mm, fld='magsqr', npts=2000)
 
     ## Analyze a lineout of choice for a zero-crossing (searching for first in ROI from +z to -z)
     zgv = anlsD['line1_zgv'] # Extract velocity, in cm
@@ -326,6 +330,22 @@ def plotTstreak(anlsT, outdir='.'):
         fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
         fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Mass density.png"), dpi=300)
 
+        fig = plt.figure(6)
+        fig.clear()
+        C = anlsT[lbl + '_cs'].T # Sound speed, in cm/s
+        vmax = 1.2 * np.max(C[(zgv > 3.0) & (zgv < 5.0),:])
+        ax = plt.subplot(111)
+        cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
+        ax.set_xlabel("Time (ns)")
+        ax.set_ylabel("Z (mm)")
+        ax.set_xlim(0, 50)
+        cbar = fig.colorbar(cax)
+        cbar.ax.set_ylabel("Sound speed (cm/s)")
+        ax.set_title(r"Temporal streak of sound speed, $\rho$=" + str(rad_mm) + " mm")
+        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
+        fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Sound speed.png"), dpi=300)
+
+        
     plt.close('all')
     
 def plotT(anlsT, outdir='.'):
