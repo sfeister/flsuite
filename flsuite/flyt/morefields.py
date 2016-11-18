@@ -41,3 +41,7 @@ def _KEdens(field, data): # Classical kinetic energy per volume (KE = 1/2 m v^2)
 @derived_field(name="cell_KE", units="code_mass*code_length**2/code_time**2")
 def _cellKE(field, data): # Classical kinetic energy of each cell (KE = 1/2 m v^2), returned in code units
     return 0.5 * data['cell_mass'] * (data['velx']**2 + data['vely']**2 + data['velz']**2)
+    
+@derived_field(name="abar", units="dimensionless")
+def _abar(field, data): # Atomic mass
+    return 1.0 / data['sumy']
