@@ -13,7 +13,9 @@ CHANGELOG:
 2016-11-18 Changed from magtrack2.py to magtrack3.py
            Removed "stagnation" label
            Added more variables
-
+2016-11-29 Added a bunch of plasma variables in morefields.py, then included here.
+           Got rid of slow units determination
+           
 TODO:
 * Organize the calls for lineout analysis of various widths
 * Clean up fatline function (from flyt) to reduce memory overhead of multiple calls
@@ -21,11 +23,12 @@ TODO:
 * Better incorporate simulation name? Not sure.
 * Clean up the lineouts plotting outputs
 * Update magnetic field energy so it's not vacuum energy (mu_0) but the real mu?
+* Sort out the use of included derived fields where appropriate
 """
 
 
 # SHOULD BE FALSE unless this is the most simple re-analysis
-quick = False # If true, assume analysis has already been completed and only remake plots
+quick = True # If true, assume analysis has already been completed and only remake plots
 
 import matplotlib as mpl
 mpl.use("Agg")
@@ -59,39 +62,31 @@ def anlzD(ds, outdir='.'):
     anlsD = {}
     anlsD['times_ns'] = ds.current_time.in_units('ns').v
     
-    # Extract a lineout at X=Y=0 for velocity
-    anlsD['line1_zgv'], anlsD['line1_velz'] = flyt.lineout(ds, field='velz', axis=2, npts=2000)
-    _, anlsD['line1_magtot'] = flyt.lineout(ds, field='magtot', axis=2, npts=2000)
-    _, anlsD['line1_dens'] = flyt.lineout(ds, field='dens', axis=2, npts=2000)
-    _, anlsD['line1_KEdens'] = flyt.lineout(ds, field='KEdens', axis=2, npts=2000)
-    _, anlsD['line1_magsqr'] = flyt.lineout(ds, field='magsqr', axis=2, npts=2000)
-    _, anlsD['line1_cs'] = flyt.lineout(ds, field='cs', axis=2, npts=2000)
+    anlsD['myflds'] = ['nion', 'nele', 'coulog', 'Pm', 'RmperL', 'ReperL', 'tele', 'tion', 'iimfp', 'abar', 'zbar'] # A more general list of fields
+    fldids = anlsD['myflds'] + ['velz', 'magtot', 'dens', 'KEdens', 'magsqr', 'cs', 'mach']
 
-    dd = ds.all_data()
-    anlsD['line1_velz_units'] = str(dd['velz'].units) # TODO: Better. Include the units in the lineout call
-    anlsD['line1_zgv_units'] = str(dd['z'].units) #TODO: Better
-    anlsD['line1_dens_units'] = str(dd['dens'].units) #TODO: Better
-    anlsD['line1_cs_units'] = str(dd['cs'].units) #TODO: Better
+    #fldids = ['velz', 'mach'] #TEST
     
-    
+    # Extract a lineout at X=Y=0 for velocity
+    anlsD['line1_zgv'], fldgv = flyt.lineout2(ds, flds=fldids, axis=2, npts=2000)
+    for fldid in fldids:
+        anlsD['line1_' + fldid] = fldgv[fldid]
+        anlsD['line1_' + fldid + '_units'] = str(fldgv[fldid].units)
+
     ## TODO: Organize this fatter and fatter lineout section. Also, fix the fatline function so it takes all the fields at once (minimize overhead)
     # Extract a fatter lineout at X=Y=0 for similar quantities
     rad_mm = 0.5 # Radius of the lineout cylinder
-    anlsD['line_500um_zgv'], anlsD['line_500um_velz'] = flyt.fatline(ds, rad_mm, fld='velz', npts=2000)
-    _, anlsD['line_500um_magtot'] = flyt.fatline(ds, rad_mm, fld='magtot', npts=2000)
-    _, anlsD['line_500um_dens'] = flyt.fatline(ds, rad_mm, fld='dens', npts=2000)
-    _, anlsD['line_500um_KEdens'] = flyt.fatline(ds, rad_mm, fld='KEdens', npts=2000)
-    _, anlsD['line_500um_magsqr'] = flyt.fatline(ds, rad_mm, fld='magsqr', npts=2000)
-    _, anlsD['line_500um_cs'] = flyt.fatline(ds, rad_mm, fld='cs', npts=2000)
-
+    anlsD['line_500um_zgv'], fldgv = flyt.fatline2(ds, rad_mm, flds=fldids, npts=2000)
+    for fldid in fldids:
+        anlsD['line_500um_' + fldid] = fldgv[fldid]
+        anlsD['line_500um_' + fldid + '_units'] = str(fldgv[fldid].units)
+        
     # Extract an even fatter lineout at X=Y=0 for similar quantities
     rad_mm = 2.0 # Radius of the lineout cylinder
-    anlsD['line_2000um_zgv'], anlsD['line_2000um_velz'] = flyt.fatline(ds, rad_mm, fld='velz', npts=2000)
-    _, anlsD['line_2000um_magtot'] = flyt.fatline(ds, rad_mm, fld='magtot', npts=2000)
-    _, anlsD['line_2000um_dens'] = flyt.fatline(ds, rad_mm, fld='dens', npts=2000)
-    _, anlsD['line_2000um_KEdens'] = flyt.fatline(ds, rad_mm, fld='KEdens', npts=2000)
-    _, anlsD['line_2000um_magsqr'] = flyt.fatline(ds, rad_mm, fld='magsqr', npts=2000)
-    _, anlsD['line_2000um_cs'] = flyt.fatline(ds, rad_mm, fld='magsqr', npts=2000)
+    anlsD['line_2000um_zgv'], fldgv = flyt.fatline2(ds, rad_mm, flds=fldids, npts=2000)
+    for fldid in fldids:
+        anlsD['line_2000um_' + fldid] = fldgv[fldid]
+        anlsD['line_2000um_' + fldid + '_units'] = str(fldgv[fldid].units)
 
     ## Analyze a lineout of choice for a zero-crossing (searching for first in ROI from +z to -z)
     zgv = anlsD['line1_zgv'] # Extract velocity, in cm
@@ -240,7 +235,29 @@ def plotTsph(anlsT, outdir='.'):
     fig.savefig(os.path.join(outdir, 'Energy vs time - Kinetic and Magnetic (log).png'))
     plt.close('all')
 
-    
+def customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname):
+    """ One-off, custom plotting function for Scott's use in streak plots 
+    Creates and saves a figure based on specific and inflexible inputs """
+    fig = plt.figure(7)
+    fig.clear()
+    C = anlsT[lbl + '_' + fld].T
+    vmax = 1.2 * np.max(np.abs(C[(zgv > 3.0) & (zgv < 5.0),:]))
+    ax = plt.subplot(111)
+    cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
+    ax.set_xlabel("Time (ns)")
+    ax.set_ylabel("Z (mm)")
+    ax.set_xlim(0, 50)
+    cbar = fig.colorbar(cax)
+    if units == "dimensionless":
+        ylabel = name
+    else:
+        ylabel = name + " (" + units + ")"
+    cbar.ax.set_ylabel(ylabel)
+    ax.set_title(r"Temporal streak of " + name + r", $\rho$=" + str(rad_mm) + " mm")
+    fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
+    fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - " + name + ".png"), dpi=300)
+    return fig
+
 def plotTstreak(anlsT, outdir='.'):
     """From anlsT, generate streak plots (field value lineout vs. time)"""
     print("Making streak plots...")
@@ -253,6 +270,12 @@ def plotTstreak(anlsT, outdir='.'):
     for lbl, rad_mm in zip(["line1", "line_500um", "line_2000um"], [0.0, 0.5, 2.0]): # Iterate over the lineouts (defined above), make plots for each
         zgv = anlsT[lbl + '_zgv'][0]*1e1 # zgv in mm
         
+        fld = 'mach' # Mach number (local fluid velocity / local sound speed)
+        fld_mult = 1 # Amount to multiply by
+        name = "Mach number"
+        units = "dimensionless"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
+
         fig = plt.figure(1)
         fig.clear()
         C = anlsT[lbl + '_velz'].T * 1e-5 # Velocity z component, in um/ns (converted from cm/s)
@@ -344,8 +367,23 @@ def plotTstreak(anlsT, outdir='.'):
         ax.set_title(r"Temporal streak of sound speed, $\rho$=" + str(rad_mm) + " mm")
         fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
         fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Sound speed.png"), dpi=300)
-
         
+        for fldid in anlsT['myflds'][0]: # Iterate over all the junky fields
+            fig = plt.figure(8)
+            fig.clear()
+            C = anlsT[lbl + '_' + fldid].T
+            vmax = 1.2 * np.max(np.abs(C[(zgv > 3.0) & (zgv < 5.0),:]))
+            ax = plt.subplot(111)
+            cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
+            ax.set_xlabel("Time (ns)")
+            ax.set_ylabel("Z (mm)")
+            ax.set_xlim(0, 50)
+            cbar = fig.colorbar(cax)
+            cbar.ax.set_ylabel(fldid + ' (' + anlsT[lbl + '_' + fldid + '_units'][0] + ')')
+            ax.set_title(r"Temporal streak of " + fldid + r", $\rho$=" + str(rad_mm) + " mm")
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
+            fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - " + fldid + ".png"), dpi=300)
+
     plt.close('all')
     
 def plotT(anlsT, outdir='.'):
@@ -380,26 +418,25 @@ if __name__ == "__main__":
     datdirs[1] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1'
     basenms[1] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
-    simnames[3] = "NIF_TDYNO_BAND"
-    datdirs[3] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
-    basenms[3] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
-
-    simnames[2] = "NIF_TDYNO_200KJ"
-    datdirs[2] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN2'
+    simnames[2] = "NIF_TDYNO_BAND"
+    datdirs[2] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
     basenms[2] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+
+    simnames[3] = "NIF_TDYNO_200KJ"
+    datdirs[3] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
+    basenms[3] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
 
     for simname, datdir, basenm in zip(simnames, datdirs, basenms):
         ## READ IN THE SIM NAMES
         fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_??[0,5]0') # yt-time-series filename pattern for plot files
-        outroot=r'/home/sfeister/myouts/'
+        #outroot=r'/home/sfeister/myouts/'
         outroot=r'/home/sfeister/myouts/scratch_dev'
         
         if rank == 0:
             print("STARTING WORK ON: " + simname)
             #outdir = sf.subdir(outroot, "MagAnalysis-{:%Y-%m-%d_%H%M}".format(datetime.now()))
             outdir = sf.subdir(outroot, simname)
-            #outdir = sf.subdir(ooutroot,"scratch_dev")
         else:
             outdir = None
         outdir = comm.bcast(outdir, root=0)
