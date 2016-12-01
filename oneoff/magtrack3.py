@@ -95,7 +95,7 @@ def anlzD(ds, outdir='.'):
     
     mask_cross = np.append(np.diff(np.signbit(velz)), False) # Boolean array of zero crossing (True if crossing occurs at index)
     cross_tupl = np.where(mask_cross & ct)
-    if np.sum(mask_cross & ct) > 0: # If any crossings were found in ROI 
+    if np.sum(mask_cross & ct) > 0: # If any crossings were found in ROI
         zstag = zgv[mask_cross & ct][-1]
     else: # No crossings found; just use the maximum Z value in the ROI
         zstag = zgv[ct][-1]
@@ -235,18 +235,37 @@ def plotTsph(anlsT, outdir='.'):
     fig.savefig(os.path.join(outdir, 'Energy vs time - Kinetic and Magnetic (log).png'))
     plt.close('all')
 
-def customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname):
+def customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname, cmap=None, vmin=None, vmax=None, logit=False):
     """ One-off, custom plotting function for Scott's use in streak plots 
     Creates and saves a figure based on specific and inflexible inputs """
     fig = plt.figure(7)
     fig.clear()
-    C = anlsT[lbl + '_' + fld].T
-    vmax = 1.2 * np.max(np.abs(C[(zgv > 3.0) & (zgv < 5.0),:]))
+    if logit: # Logarithm of (data * fld_mult)
+        C = np.log10(anlsT[lbl + '_' + fld].T * fld_mult) # Read in the data, along with a multiplier
+    else: # Normal; (data * fld_mult)
+        C = anlsT[lbl + '_' + fld].T * fld_mult # Read in the data, along with a multiplier
+        
+    if vmax is None:
+        vmax = 1.2 * np.max(np.abs(C[(zgv > 3.0) & (zgv < 5.0),:]))
+    
+    if vmin is None:
+        if np.min(C) < 0: # Do we plot symmetric about zero, or all greater than zero?
+            vmin = -vmax
+            if cmap is None:
+                cmap = 'RdBu' # Diverging colormap
+        else:
+            vmin = 0
+    if cmap is None:
+        cmap = 'viridis' # Sequential colormap
+        
+    if units is None: # Get the units if not specified (units = None)
+        units = anlsT[lbl + '_' + fld + '_units'][0]
     ax = plt.subplot(111)
-    cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
+    cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=vmin, vmax=vmax, cmap=cmap)
     ax.set_xlabel("Time (ns)")
     ax.set_ylabel("Z (mm)")
     ax.set_xlim(0, 50)
+    ax.set_ylim(2, 6) # TEMPORARY Z LIMIT ENFORCEMENT
     cbar = fig.colorbar(cax)
     if units == "dimensionless":
         ylabel = name
@@ -257,7 +276,7 @@ def customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outd
     fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
     fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - " + name + ".png"), dpi=300)
     return fig
-
+        
 def plotTstreak(anlsT, outdir='.'):
     """From anlsT, generate streak plots (field value lineout vs. time)"""
     print("Making streak plots...")
@@ -276,114 +295,115 @@ def plotTstreak(anlsT, outdir='.'):
         units = "dimensionless"
         fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
 
-        fig = plt.figure(1)
-        fig.clear()
-        C = anlsT[lbl + '_velz'].T * 1e-5 # Velocity z component, in um/ns (converted from cm/s)
-        vmax = 2*np.mean(np.abs(C))
-        ax = plt.subplot(111)
-        cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=-vmax, vmax=vmax, cmap='RdBu')
-        ax.set_xlabel("Time (ns)")
-        ax.set_ylabel("Z (mm)")
-        ax.set_xlim(0, 50)
-        cbar = fig.colorbar(cax)
-        cbar.ax.set_ylabel("Velocity, Z-component (um/ns)")
-        ax.set_title(r"Temporal streak of velocity-Z-component, $\rho$=" + str(rad_mm) + ' mm')
-        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
-        fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Velocity-z.png"), dpi=300)
+        fld = 'velz' # Velocity z component
+        fld_mult = 1e-5 # convert to um/ns (converted from cm/s) 
+        name = "Velocity, Z-component"
+        units = "um/ns"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
 
-        fig = plt.figure(2)
-        fig.clear()
-        C = anlsT[lbl + '_magtot'].T * np.sqrt(4*np.pi)*1e-6 # Get magnetic field as MegaGauss (from code_magnetic)
-        vmax = 1.2 * np.max(C[(zgv > 3.0) & (zgv < 5.0),:])
-        ax = plt.subplot(111)
-        cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
-        ax.set_xlabel("Time (ns)")
-        ax.set_ylabel("Z (mm)")
-        ax.set_xlim(0, 50)
-        cbar = fig.colorbar(cax)
-        cbar.ax.set_ylabel("Magnetic field magnitude (MGs)")
-        ax.set_title(r"Temporal streak of magnetic field magnitude, $\rho$=" + str(rad_mm) + " mm")
-        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
-        fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - B magnitude.png"), dpi=300)    
+        fld = 'magtot' # Magnetic field magnitude
+        fld_mult = np.sqrt(4*np.pi)*1e-6 # Converted into MegaGauss (from code_magnetic)
+        name = "Magnetic field magnitude" # Or, "B field magnitude"
+        units = "MGs"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
 
-        fig = plt.figure(3)
-        fig.clear()
-        Bsq_Tsq = (anlsT[lbl + '_magsqr'].T * 4*np.pi)*1e-8 # Magnetic field squared, in tesla squared
-        EBdens_Jpmm3 = 0.5 * (Bsq_Tsq / sc.mu_0) * 1e-9
-        C = EBdens_Jpmm3
-        vmax = 1.2 * np.max(C[(zgv > 3.0) & (zgv < 5.0),:])
-        ax = plt.subplot(111)
-        cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
-        ax.set_xlabel("Time (ns)")
-        ax.set_ylabel("Z (mm)")
-        ax.set_xlim(0, 50)
-        cbar = fig.colorbar(cax)
-        cbar.ax.set_ylabel("Magnetic energy density (J/mm^3)")
-        ax.set_title(r"Temporal streak of magnetic energy density, $\rho$=" + str(rad_mm) + " mm")
-        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
-        fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Magnetic energy density.png"), dpi=300)
+        fld = 'magsqr' # Magnetic field magnitude, squared
+        fld_mult = (4 * np.pi * 1e-8) * (0.5 * 1e-9 / sc.mu_0)  # Converted first into tesla^2, then into magnetic energy density, J/mm3 (from code_magnetic**2)
+        name = "Magnetic energy density" # Or, "B field magnitude"
+        units = "J/mm^3"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
 
-        fig = plt.figure(4)
-        fig.clear()
-        C = anlsT[lbl + '_KEdens'].T * 1e-7 * 1e-3 # Kinetic energy density, in J/mm^3
-        vmax = 1.2 * np.max(C[(zgv > 3.0) & (zgv < 5.0),:])
-        ax = plt.subplot(111)
-        cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
-        ax.set_xlabel("Time (ns)")
-        ax.set_ylabel("Z (mm)")
-        ax.set_xlim(0, 50)
-        cbar = fig.colorbar(cax)
-        cbar.ax.set_ylabel("Kinetic energy density (J/mm^3)")
-        ax.set_title(r"Temporal streak of kinetic energy density, $\rho$=" + str(rad_mm) + " mm")
-        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
-        fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Kinetic energy density.png"), dpi=300)
+        fld = 'KEdens' # Kinetic energy density
+        fld_mult = 1
+        name = "Kinetic energy density"
+        units = "J/mm^3"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
 
-        fig = plt.figure(5)
-        fig.clear()
-        C = anlsT[lbl + '_dens'].T # Mass density, in g/cm^3
-        vmax = 1.2 * np.max(C[(zgv > 3.0) & (zgv < 5.0),:])
-        ax = plt.subplot(111)
-        cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
-        ax.set_xlabel("Time (ns)")
-        ax.set_ylabel("Z (mm)")
-        ax.set_xlim(0, 50)
-        cbar = fig.colorbar(cax)
-        cbar.ax.set_ylabel("Mass density (g/cm^3)")
-        ax.set_title(r"Temporal streak of mass density, $\rho$=" + str(rad_mm) + " mm")
-        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
-        fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Mass density.png"), dpi=300)
+        fld = 'dens' # Mass density, in g/cm^3
+        fld_mult = 1
+        name = "Mass density"
+        units = "g/cm^3"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
 
-        fig = plt.figure(6)
-        fig.clear()
-        C = anlsT[lbl + '_cs'].T # Sound speed, in cm/s
-        vmax = 1.2 * np.max(C[(zgv > 3.0) & (zgv < 5.0),:])
-        ax = plt.subplot(111)
-        cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
-        ax.set_xlabel("Time (ns)")
-        ax.set_ylabel("Z (mm)")
-        ax.set_xlim(0, 50)
-        cbar = fig.colorbar(cax)
-        cbar.ax.set_ylabel("Sound speed (cm/s)")
-        ax.set_title(r"Temporal streak of sound speed, $\rho$=" + str(rad_mm) + " mm")
-        fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
-        fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - Sound speed.png"), dpi=300)
+        fld = 'cs' # Sound speed
+        fld_mult = 1
+        name = "Sound speed"
+        units = None # Use default units
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
+
+        fld = 'nion' # Ion density
+        fld_mult = 1
+        name = "Ion density"
+        units = "1/cm^3" # Use default units
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
+
+        fld = 'nele' # Electron density (per cm^3)
+        fld_mult = 1
+        name = "Ion density"
+        units = "1/cm^3" # Use default units
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
+
+        fld = 'tion' # Ion temperature (in K)
+        fld_mult = 1/11604.525 # Convert to eV
+        name = "Ion temperature"
+        units = "eV"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
+
+        fld = 'tele' # Electron temperature (in K)
+        fld_mult = 1/11604.525 # Convert to eV
+        name = "Electron temperature"
+        units = "eV"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
+
+        fld = 'iimfp' # Ion-ion MFP
+        fld_mult = 1e4 # Convert to microns
+        name = "Ion-ion mean free path"
+        units = "um"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
+
+        fld = 'RmperL' # Magnetic Reynold's number, per L (in cm)
+        fld_mult = 0.06 # Convert to Magnetic Reynold's number, assume L = 600 um (0.06 cm)
+        name = "Magnetic Reynolds Number"
+        units = "dimensionless"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname, vmin=0)
+
+        fld = 'abar' # Average atomic weight (amu)
+        fld_mult = 1
+        name = "Average atomic weight"
+        units = "a.m.u."
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname, cmap='Paired')
+
+        fld = 'zbar' # Average ionization
+        fld_mult = 1
+        name = "Average ionization"
+        units = "dimensionless"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname, cmap='Paired')
+
+        fld = 'Pm' # Prandtl number
+        fld_mult = 1
+        name = "Log10[Prandtl number]"
+        units = "dimensionless" # Use default units
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname, vmin=-5, vmax=7, cmap='Paired', logit=True)
+
+        fld = 'ReperL' # Reynold's number, per L (in cm)
+        fld_mult = 0.06 # Convert to Reynold's number, assume L = 600 um (0.06 cm)
+        name = "Reynolds Number"
+        units = "dimensionless"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname, vmin=0)
+
+        fld = 'coulog' # Coulomb logarithm
+        fld_mult = 1
+        name = "Coulomb logarithm"
+        units = "dimensionless"
+        fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname, vmin=0)
+
+        #for fldid in anlsT['myflds'][0]: # Iterate over all the junky fields
+        #    fld = fldid
+        #    fld_mult = 1
+        #    name = fldid
+        #    units = None # Use default units
+        #    fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)       
         
-        for fldid in anlsT['myflds'][0]: # Iterate over all the junky fields
-            fig = plt.figure(8)
-            fig.clear()
-            C = anlsT[lbl + '_' + fldid].T
-            vmax = 1.2 * np.max(np.abs(C[(zgv > 3.0) & (zgv < 5.0),:]))
-            ax = plt.subplot(111)
-            cax = ax.pcolorfast((tgv[0], tgv[-1]), (zgv[0], zgv[-1]), C, vmin=0, vmax=vmax, cmap='viridis')
-            ax.set_xlabel("Time (ns)")
-            ax.set_ylabel("Z (mm)")
-            ax.set_xlim(0, 50)
-            cbar = fig.colorbar(cax)
-            cbar.ax.set_ylabel(fldid + ' (' + anlsT[lbl + '_' + fldid + '_units'][0] + ')')
-            ax.set_title(r"Temporal streak of " + fldid + r", $\rho$=" + str(rad_mm) + " mm")
-            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower-right footer
-            fig.savefig(os.path.join(outdir, "Temporal streak (" + str(rad_mm).replace('.','p') + " mm thickness) - " + fldid + ".png"), dpi=300)
-
     plt.close('all')
     
 def plotT(anlsT, outdir='.'):
@@ -414,22 +434,24 @@ if __name__ == "__main__":
     datdirs[0] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT4/RUN1'
     basenms[0] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
     
-    simnames[1] = "OMEGA_NLUF6"
-    datdirs[1] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1'
-    basenms[1] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+    simnames[3] = "OMEGA_NLUF6"
+    datdirs[3] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1' # BROKEN LINK?
+    basenms[3] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
-    simnames[2] = "NIF_TDYNO_BAND"
-    datdirs[2] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
+    simnames[1] = "NIF_TDYNO_BAND"
+    datdirs[1] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
+    basenms[1] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+
+    simnames[2] = "NIF_TDYNO_200KJ"
+    datdirs[2] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
     basenms[2] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
-
-    simnames[3] = "NIF_TDYNO_200KJ"
-    datdirs[3] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
-    basenms[3] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
 
     for simname, datdir, basenm in zip(simnames, datdirs, basenms):
         ## READ IN THE SIM NAMES
-        fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_??[0,5]0') # yt-time-series filename pattern for plot files
+        fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_???[0,5]') # yt-time-series filename pattern for plot files
+        # hdf5_plt_cnt_??[0,2,4,6,8]0
+        # 'hdf5_plt_cnt_??[0,5]0'
         #outroot=r'/home/sfeister/myouts/'
         outroot=r'/home/sfeister/myouts/scratch_dev'
         
