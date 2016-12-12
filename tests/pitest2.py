@@ -175,6 +175,6 @@ if __name__ == "__main__":
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
-    ax.elev=10
-    ax.azim=40
+    ax.elev=4
+    ax.azim=43
     ax.set_title("3D view of TOP-25 particle tracks")
