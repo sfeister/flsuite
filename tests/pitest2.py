@@ -1,12 +1,19 @@
 #!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 """
-pitest1.py: Test of reading a proton imaging plotfile contents
+pitest2.py: Test of reading a proton imaging plotfile contents
 
 Created by Scott Feister on Wed Dec 07 15:31:48 2016
 
+Makes some very nice 3D plots.
+
 Changelog:
-    2016-12-12 Spun off this program from trimtest.py (analysis of TRIM data)
+2016-12-12 Spun off this program from trimtest.py (analysis of TRIM data)
+
+TODO:
+* Better framework for selection of "good" particles
+* Pre-calculate a variety of values? Keep velocity, position, start/end, as vectors?
+
 """
 
 import os
@@ -51,13 +58,19 @@ if __name__ == "__main__":
     posxyz = np.rollaxis(trakarr[:,:,1:],2,0) # Positions along the trajectory (Component x Particle x Step#)
     velxyz = np.gradient(posxyz, axis=2) # Non-normalized velocities along the trajectories (Component x Particle x Step#)
     velxyz = velxyz / np.sqrt(np.sum(velxyz**2, axis=0)) # Normalized velocities along the trajectories, normalized to 1 (Component x Particle x Step#)
+
+    velmag = np.sqrt(np.sum(velxyz**2, axis=0)) # This is actually always 1, in our case
+    theta = np.arccos(velxyz[1]/velmag)
+    
+    accxyz = np.gradient(velxyz, axis=2) # Accelerations, using a normalized velocity
+    accmag = np.sqrt(np.sum(accxyz**2, axis=0)) # Magnitude of acceleration, using the normalized velocity
     
     fig = plt.figure(1)
     fig.clear()
     ax = fig.add_subplot(111)
 
     ntplot = 1000 # Number of tracks to plot
-    maxpathl = 1000.0
+    maxpathl = 100.0
     
     ct = pathl[:ntplot,:] > maxpathl # nan condition
     xvals = trakarr[:ntplot,:,1] # X values along trajectory
@@ -178,3 +191,47 @@ if __name__ == "__main__":
     ax.elev=4
     ax.azim=43
     ax.set_title("3D view of TOP-25 particle tracks")
+    
+    fig = plt.figure(8)
+    fig.clear()
+    ax1 = fig.add_subplot(221)
+    ax1.plot(np.nanmean(accmag, 0))
+    ax1.set_title("Acceleration vs. Particle step (All particles)")
+    ax1.set_ylabel("Acceleration, averaged over particles (a.u.)")
+    ax1.set_xlabel("Particle step")
+
+    fig = plt.figure(9)
+    fig.clear()
+    ax2 = fig.add_subplot(111)
+    offset = np.arange(accmag.shape[0])*0.004
+    ax2.plot(posxyz[1,:100,:].T, (accmag[:100,:].T - offset[:100]), lw=0.5)
+    ax2.set_title("Acceleration vs. Y depth (100 particles)", fontsize=20)
+    ax2.set_xlabel("Spatial Y", fontsize=20)
+    ax2.set_ylabel("Acceleration + offset (a.u.)", fontsize=20)
+    
+    
+    fig = plt.figure(10)
+    fig.clear()
+    ax = fig.add_subplot(221)
+    theta_rel = (theta.T - theta[:,0].T).T
+    dtheta = np.gradient(theta, axis=1)
+    ax.pcolormesh(theta_rel[:,:200])
+    
+    ax2 = fig.add_subplot(222)
+    ax2.plot(posxyz[1,:10,:].T, np.rad2deg(theta[:10,:].T))
+    ax2.set_title("Theta vs. Y depth (10 particles)")
+    ax2.set_ylabel("Theta (degs)")
+    ax2.set_xlabel("Spatial Y")
+
+    ax3 = fig.add_subplot(223)
+    ax3.plot(dtheta[:2,:].T)
+    ax3.set_ylim(-0.006, 0.006)
+    ax3.set_title("dTheta vs. Step # (2 particles)")
+    ax3.set_ylabel("dTheta (drad)")
+
+    ax4 = fig.add_subplot(224)
+    ax4.plot(pathl[:10,:].T, np.rad2deg(theta[:10,:].T))
+    ax4.set_title("Theta vs. Path length (10 particles)")
+    ax4.set_ylabel("Theta (degs)")
+    ax4.set_xlabel("Path length")
+
