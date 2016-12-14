@@ -28,7 +28,7 @@ TODO:
 
 
 # SHOULD BE FALSE unless this is the most simple re-analysis
-quick = True # If true, assume analysis has already been completed and only remake plots
+quick = False # If true, assume analysis has already been completed and only remake plots
 
 import matplotlib as mpl
 mpl.use("Agg")
@@ -430,9 +430,9 @@ if __name__ == "__main__":
     datdirs = [None]*nsims
     basenms = [None]*nsims
 
-    simnames[0] = "OMEGA_NLUF4"
-    datdirs[0] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT4/RUN1'
-    basenms[0] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+    simnames[2] = "OMEGA_NLUF4"
+    datdirs[2] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT4/RUN1'
+    basenms[2] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
     
     simnames[3] = "OMEGA_NLUF6"
     datdirs[3] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1' # BROKEN LINK?
@@ -442,14 +442,16 @@ if __name__ == "__main__":
     datdirs[1] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
     basenms[1] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
-    simnames[2] = "NIF_TDYNO_200KJ"
-    datdirs[2] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
-    basenms[2] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+    simnames[0] = "NIF_TDYNO_200KJ"
+    datdirs[0] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
+    basenms[0] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
 
     for simname, datdir, basenm in zip(simnames, datdirs, basenms):
         ## READ IN THE SIM NAMES
-        fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_???[0,5]') # yt-time-series filename pattern for plot files
+        fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_???[0,2,4,6,8]') # yt-time-series filename pattern for plot files
+        # hdf5_plt_cnt_???[0,2,4,6,8]
+        # hdf5_plt_cnt_???[0,5]
         # hdf5_plt_cnt_??[0,2,4,6,8]0
         # 'hdf5_plt_cnt_??[0,5]0'
         #outroot=r'/home/sfeister/myouts/'
