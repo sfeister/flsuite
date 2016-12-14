@@ -44,7 +44,7 @@ def piRead(fn):
 
 # Expect this to be replaced with something more elegant soon.
 def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6):
-    """Performs a massive, custom analysis. Outputs plots in PIdir
+    """Performs a massive, custom analysis. Outputs plots in PIdir, unless outdir is specified.
     
     PIdir: Path to folder containing the PI outputs like blahblah_ProtonImagingMainPrint    
     simname: (String) Name user gives this sim for plotting purposes, can be anything here. If left as none, defaults to basename.
