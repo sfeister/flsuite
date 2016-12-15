@@ -9,13 +9,13 @@ This is one of the FLASH i/o functions, which are dedicated to parsing and gener
 
 Changelog:
 2016-09-19 110 PM first version of file. For help with Mira re-submission automation.
-2016-10-05 Changed name to parIO.py and added to flsuite module
+2016-10-05 Changed name to parIO.py (from parparse1.py) and added to flsuite module
+2016-12-15 Updated for single-function restart call, adding function "prepRest()"
 
 Future work:
 * Extract log_file and basenm from the flash.par
-* Move onto Github
 * Use docopt for filename, log_file etc. input
-* Make python-based flash.par reader/writer
+* Make python-based flash.par reader/writer (general and handling types correctly)
 
 """
 
@@ -37,11 +37,11 @@ def getLogNums(basenm, log_file, simdir = '.'):
     pltnum: integer, first plot number to write during restart run
     
     Example usage:
-    chknum, pltnum = getLogNums("\home\feister\myrun", "tdyno2016.log", "tdyno2016_")
+    chknum, pltnum = getLogNums("tdyno2016_", "tdyno2016.log", "\home\feister\myrun")
     print chknum, pltnum
     """
     
-    # Read the basename within
+    # Read the log file contents
     with open(os.path.join(simdir, log_file), "r") as f:
         filetxt = f.read() # Read in the whole file, all at once
     # \[IO_write\W*?\] 
@@ -94,6 +94,19 @@ def writeRePar(chknum, pltnum, simdir = '.', par_file = 'flash.par'):
 
     return 0
 
+def prepRest(simdir, basenm, lognm, parnm = 'flash.par'):
+    """ Prepare a simulation directory to be re-run (restarted)
+    High-level function to be called on a simulation directory.
+    Details will be replaced down the road.
+    
+    Example Usage:
+        prepRest("\home\feister\myrun", "tdyno2016_", "tdyno2016.log")
+    """
+    chknum, pltnum = getLogNums(basenm, lognm, simdir) # Analyze the log file for appropriate numbers
+    writeRePar(chknum, pltnum, simdir = simdir, par_file = parnm) # Update the flash.par file
+    
+    return 0
+    
 def parMod(pardict, simdir='.', par_file='flash.par'):
     """General modification of a flash.par. Pardict is a dictionary with variable names as keys and numbers, strings, etc. as values
     
