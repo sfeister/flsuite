@@ -82,6 +82,13 @@ def anlzD(ds, outdir='.'):
         anlsD['line_500um_' + fldid + '_units'] = str(fldgv[fldid].units)
         
     # Extract an even fatter lineout at X=Y=0 for similar quantities
+    rad_mm = 1.0 # Radius of the lineout cylinder
+    anlsD['line_1000um_zgv'], fldgv = flyt.fatline2(ds, rad_mm, flds=fldids, npts=2000)
+    for fldid in fldids:
+        anlsD['line_1000um_' + fldid] = fldgv[fldid]
+        anlsD['line_1000um_' + fldid + '_units'] = str(fldgv[fldid].units)
+
+    # Extract a yet-even fatter lineout at X=Y=0 for similar quantities
     rad_mm = 2.0 # Radius of the lineout cylinder
     anlsD['line_2000um_zgv'], fldgv = flyt.fatline2(ds, rad_mm, flds=fldids, npts=2000)
     for fldid in fldids:
@@ -286,7 +293,7 @@ def plotTstreak(anlsT, outdir='.'):
     zstag = anlsT['z_stag']*1e1 # z value at stagnation, in mm, through time
 
     ## LINE Plots
-    for lbl, rad_mm in zip(["line1", "line_500um", "line_2000um"], [0.0, 0.5, 2.0]): # Iterate over the lineouts (defined above), make plots for each
+    for lbl, rad_mm in zip(["line1", "line_500um", "line_1000um", "line_2000um"], [0.0, 0.5, 1.0, 2.0]): # Iterate over the lineouts (defined above), make plots for each
         zgv = anlsT[lbl + '_zgv'][0]*1e1 # zgv in mm
         
         fld = 'mach' # Mach number (local fluid velocity / local sound speed)
@@ -438,13 +445,13 @@ if __name__ == "__main__":
     datdirs[3] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1' # BROKEN LINK?
     basenms[3] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
-    simnames[1] = "NIF_TDYNO_BAND"
-    datdirs[1] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
-    basenms[1] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
-
-    simnames[0] = "NIF_TDYNO_200KJ"
-    datdirs[0] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
+    simnames[0] = "NIF_TDYNO_BAND"
+    datdirs[0] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
     basenms[0] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+
+    simnames[1] = "NIF_TDYNO_200KJ"
+    datdirs[1] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
+    basenms[1] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
 
     for simname, datdir, basenm in zip(simnames, datdirs, basenms):
