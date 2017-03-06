@@ -21,6 +21,7 @@ import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import gridspec
 
 if __name__ == "__main__":
     ## Load into working memory and sort
@@ -136,6 +137,7 @@ if __name__ == "__main__":
     ax0.set_xlabel("TOF (a.u.)")
     ax0.set_ylabel("Number density (a.u.)")
     ax0.set_title("Time of flight")
+    ax0.set_yscale('log')
 
     ax1 = fig.add_subplot(222)
     ax1.hist(tofadj, bins=100,range=(0.62, 0.64))
@@ -143,6 +145,7 @@ if __name__ == "__main__":
     ax1.set_xlabel(r"TOF (adjusted for $\theta_i$, a.u.)")
     ax1.set_ylabel("Number density (a.u.)")
     ax1.set_title("Adjusted time of flight")
+    ax1.set_yscale('log')
     
     ax2 = fig.add_subplot(223)
     ax2.hexbin(xvals[:,0], zvals[:,0], gridsize=20, extent=(-0.3,0.3,0.1,0.7))
@@ -194,7 +197,7 @@ if __name__ == "__main__":
     
     fig = plt.figure(8)
     fig.clear()
-    ax1 = fig.add_subplot(221)
+    ax1 = fig.add_subplot(111)
     ax1.plot(np.nanmean(accmag, 0))
     ax1.set_title("Acceleration vs. Particle step (All particles)")
     ax1.set_ylabel("Acceleration, averaged over particles (a.u.)")
@@ -234,4 +237,97 @@ if __name__ == "__main__":
     ax4.set_title("Theta vs. Path length (10 particles)")
     ax4.set_ylabel("Theta (degs)")
     ax4.set_xlabel("Path length")
+    
+
+    ## Range of x particle plot movie (uncomment savefig line)
+    xc = 0.05
+    zc = 0.45
+    fig = plt.figure(11)
+    fig.clear()
+    gs = gridspec.GridSpec(2, 2)
+
+    ax0 = fig.add_subplot(gs[0,1])
+    ax1 = fig.add_subplot(gs[1,1])
+    ax2 = fig.add_subplot(gs[:,0], projection='3d')
+
+    i = 0
+    for xc in np.linspace(-0.15, 0.15, 10):
+        for zc in (0.4 + np.linspace(-0.15, 0.15, 10)):
+            ct2 = np.sqrt((xc - xvals[:,0])**2 + (zc - zvals[:,0])**2) < 0.03
+            
+            
+            ax0.clear()
+            ax0.scatter(xvals[ct2,0], zvals[ct2,0], marker='.', alpha=0.5, s=10)
+            ax0.scatter(xvals[:,0], zvals[:,0], marker='.', alpha=0.1, s=10)
+            ax0.set_title("Initial positions")
+            ax0.set_aspect('equal')
+            
+            ax1.clear()
+            ax1.scatter(xend[ct2], zend[ct2], marker='.', alpha=0.5, s=10)
+            ax1.scatter(xend, zend, marker='.', alpha=0.1, s=10)
+            ax1.set_title("Final positions")
+            ax1.set_aspect('equal')
+            
+            ax2.clear()
+            ax2.scatter(xvals[:,0], yvals[:,0], zvals[:,0], marker='.', c='k', alpha=0.05, s=10) # Initial posits
+            ax2.scatter(xend, yend, zend, marker='.', c='k', alpha=0.05, s=10) # Final posits
+            
+            for j in np.where(ct2)[0]:
+                ax2.plot(xvals[j,:], yvals[j,:], zvals[j,:], alpha=0.2)
+            ax2.scatter(xvals[ct2,0], yvals[ct2,0], zvals[ct2,0], marker='.', c='k', alpha=0.15, s=10) # Select Initial posits
+            ax2.scatter(xend[ct2], yend[ct2], zend[ct2], marker='.', c='k', alpha=0.15, s=10) # Select Final posits
+            ax2.set_aspect('equal')
+            ax2.set_xlabel("X")
+            ax2.set_ylabel("Y")
+            ax2.set_zlabel("Z")
+            ax2.elev=4
+            ax2.azim=33
+            ax2.set_title("3D view of " + str(np.sum(ct2)) + " particles")
+            
+            if i == 0:
+                plt.tight_layout()
+
+            #fig.savefig(os.path.join(r'C:\Users\Scott\Documents\TDYNO\plots\2016-12-16 raster movie 1', str(i).zfill(5) + '.png'))
+            i+=1
+    
+    ## Individual particle plot movie
+    fig = plt.figure(12)
+    fig.clear()
+    ax = fig.add_subplot(121, projection='3d')
+    #ax2 = fig.add_subplot(212)
+    ax3 = fig.add_subplot(122)
+    #ax4 = fig.add_subplot(224)
+
+#    for i in ix_tofsrt:
+    for i in []:
+        ax.clear()
+        ax.plot(xvals[i,:], yvals[i,:], zvals[i,:], alpha=0.5)
+        ax.scatter(xvals[:,0], yvals[:,0], zvals[:,0], marker='.', c='k', alpha=0.15, s=10) # Initial posits
+        ax.scatter(xend, yend, zend, marker='.', c='k', alpha=0.15, s=10) # Final posits
+        ax.scatter(xvals[i,0], yvals[i,0], zvals[i,0], marker='.', c='k', alpha=0.5, s=10) # Select Initial posits
+        ax.scatter(xend[i], yend[i], zend[i], marker='.', c='k', alpha=0.5, s=10) # Select Final posits
+        ax.set_aspect('equal')
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        ax.elev=4
+        ax.azim=25
+        ax.set_title("3D view of 1 particle")
+    
+#        ax2.plot(posxyz[1,i,:].T, np.rad2deg(theta[:10,:].T))
+#        ax2.set_title("Theta vs. Y depth (1 particle)")
+#        ax2.set_ylabel("Theta (degs)")
+#        ax2.set_xlabel("Spatial Y")
+
+        ax3.clear()
+        ax3.plot(dtheta[i,:].T, c='r')
+        ax3.set_ylim(-0.006, 0.006)
+        ax3.set_title("dTheta vs. Step # (1 particle) (TOFAdj = " + str(tofadj[i]) + ")")
+        ax3.set_ylabel("dTheta (drad)")
+    
+#        ax4.plot(pathl[i,:].T, np.rad2deg(theta[:10,:].T))
+#        ax4.set_title("Theta vs. Path length (1 particle)")
+#        ax4.set_ylabel("Theta (degs)")
+#        ax4.set_xlabel("Path length")
+        fig.savefig(os.path.join(r'C:\Users\Scott\Documents\TDYNO\plots\2016-12-16 pmov', str(i).zfill(5) + '.png'))
 
