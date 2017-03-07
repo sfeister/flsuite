@@ -445,13 +445,13 @@ if __name__ == "__main__":
     datdirs[3] = r'/projects/Omega-NIF_Exp/tzeferac/NLUF6grpFINAL/SCRIPT5/RUN1' # BROKEN LINK?
     basenms[3] = r'omega2015_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
-    simnames[0] = "NIF_TDYNO_BAND"
-    datdirs[0] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
-    basenms[0] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
-
-    simnames[1] = "NIF_TDYNO_200KJ"
-    datdirs[1] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
+    simnames[1] = "NIF_TDYNO_BAND"
+    datdirs[1] = r'/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND'
     basenms[1] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
+
+    simnames[0] = "NIF_TDYNO_200KJ"
+    datdirs[0] = r'/projects/CosmicLaser/tzeferac/SCRIPT1/RUN3'
+    basenms[0] = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
 
 
     for simname, datdir, basenm in zip(simnames, datdirs, basenms):
