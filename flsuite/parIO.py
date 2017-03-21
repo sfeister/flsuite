@@ -107,8 +107,14 @@ def prepRest(simdir, basenm, lognm, parnm = 'flash.par'):
     
     return 0
     
-def parMod(pardict, simdir='.', par_file='flash.par'):
-    """General modification of a flash.par. Pardict is a dictionary with variable names as keys and numbers, strings, etc. as values
+def parMod(pardict, simdir='.', par_file='flash.par', outfn=None, bak=True):
+    """General modification of a flash.par.
+    
+    pardict:    Parameters for modification; a python dictionary. A dictionary with variable names as keys and numbers, strings, etc. as values. See following example usage.
+    simdir:     Directory of the already-existing .par file
+    par_file:   Name (e.g. "flash.par") of the already-existing .par file
+    outfn:      Full filepath (e.g. "/home/scott/myrun/flash.par") of the output .par file. If None, overwrite in place.
+    bak:        If True, creates a timestamped backup of the input par_file before modification, in its original directory.
     
     Example usage:
     d = {}
@@ -125,8 +131,12 @@ def parMod(pardict, simdir='.', par_file='flash.par'):
     parMod(d, simdir='.', par_file='flash.par') # Updates ./flash.par with the new values
     """
     
-    ## Back up the flash .par (to ".par.bak_DATE") in case we royally screw it up
-    shutil.copy(os.path.join(simdir, par_file), os.path.join(simdir, par_file + '.bak_' + "{:%Y%m%d_%H%M}".format(datetime.now())))
+    if outfn is None:
+        outfn = os.path.join(simdir, par_file) # If no output filename is specified, set it to overwrite the input filename
+
+        ## Back up the flash .par (to ".par.bak_DATE") in case we royally screw it up
+    if bak: # By default, input "bak" is True; set "bak=False" to avoid this backup
+        shutil.copy(os.path.join(simdir, par_file), os.path.join(simdir, par_file + '.bak_' + "{:%Y%m%d_%H%M}".format(datetime.now())))
     
     ## Read in the .par file contents
     with open(os.path.join(simdir, par_file), "r") as f:
@@ -136,8 +146,8 @@ def parMod(pardict, simdir='.', par_file='flash.par'):
         # Key will always be a string, of course. TODO: Enforce this somehow else
         filetxt = re.sub("(" + key + "(?:\s*?)=(?:\s*?))(\S+)((?:\s*?))", r"\g<1>" + str(pardict[key]) + r"\3", filetxt) # The \g<1> is to avoid \1234 regex mistake. http://stackoverflow.com/questions/5984633/python-re-sub-group-number-after-number
     
-    ## Write out the modified .par contents (overwrite flash.par)
-    with open(os.path.join(simdir, par_file), "w") as f:
+    ## Write out the modified .par contents
+    with open(outfn, "w") as f:
         f.write(filetxt)
     
     return 0
