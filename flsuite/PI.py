@@ -67,6 +67,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
     ## All of this could somehow be packaged into something higher-level? Like, maybe a reader function? Not sure...
     # Read in a few files    
     #maindict = piRead(os.path.join(PIdir, basenm + r"ProtonImagingMainPrint.txt"))
+    print("Reading beam/detector setup...")
     try:
         detdict = piRead(os.path.join(PIdir, basenm + r"ProtonDetectorsPrint.txt"))
     except:
@@ -78,10 +79,12 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
     width_cm = float(detdict["Detector square side length (cm)"]) # Length of one side of the square CR39 detector, in cm
     apdegs = np.around(np.rad2deg(float(beamdict["Beam aperture angle (rad)"])),11) # Cone aperture angle (full-angle), in degrees. Round to 11th decimal place (to avoid rad2deg mismatches; present 1.0 rather than 0.99999999999980005)
     protMeV = float(beamdict["Proton energy (in MeV)"]) # Proton energy, in MeV
+    nprotons = float(beamdict["Number of protons in beam"]) # Number of protons launched
     
     ## Extract timestamp from filenames
     fns = sf.getfns(PIdir, prefix = basenm + 'ProtonDetectorFile')
 
+    print("Reading protons...")
     # Loop over all the functions
     for fn in fns:
         p = re.compile(basenm + r'ProtonDetectorFile([0-9]+)_(\S*)') # Strip timestamp off filename end, e.g. tdyno2016PI_ProtonDetectorFile01_2.200E-08 ==> 2.2000E-08
@@ -113,8 +116,20 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         bins_cm = np.arange(-width_cm/2, width_cm/2, bin_um*1e-4) # 1D array of bin edges, in centimetres
         H, xedges, yedges = np.histogram2d(xy_cm[:,0], xy_cm[:,1], bins=bins_cm)
         
+        # Convert H to proton fluence (protons/cm2)
+        bin_cm2 = (bin_um*1e-4)**2 # Area of each bin
+        H_pcm2 = H / bin_cm2 # Convert H (histogram array) from units of protons/bin into protons/cm2
+        
+        # Make variables with which to compare proton fluence with perpendicular fluence of undeflected beam
+        beam_cm2 = np.pi * protrad_cm**2 # Area of the undeflected beam, at CR39 position
+        beam_pcm2 = nprotons / beam_cm2 # Fluence of protons (protons/cm2) of the undeflected beam, perpendicular to beam
+
+        #Hcontr = (H - np.mean(H)) / np.mean(H) # A very simple contrast map; just divide by the mean # TODO: IMPROVE THIS!
+        Hcontr2 = (H_pcm2 - beam_pcm2) / beam_pcm2
+        Hlog2 = np.log2(H_pcm2/beam_pcm2)
+     
         print "Making PI plot..."
-        ## Figure 1: Main radiograph
+        ## Figure 1: Main radiograph (template for modified graphs; not saved)
         fig = plt.figure(1)
         plt.clf()
         ax = fig.add_subplot(111)
@@ -138,14 +153,67 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         cbar = fig.colorbar(cax, label='Protons/bin')
         plt.tight_layout()
         #sb.jointplot(dat[:,0], dat[:,1], kind='hex')
+
+        ## Figure 2: Fluence-based radiograph
+        fig = plt.figure(2)
+        plt.clf()
+        ax = fig.add_subplot(111)
+        ax.set_title('$FLASH\ protons:$ ' + simname + ', ' + str(apdegs) + '$^\circ$ ap.')
+        X, Y = np.meshgrid(xedges, yedges)
+        #vmax = 150.0
+        cax = ax.pcolormesh(X, Y, H.T, cmap='Greys', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+        # Draw a circle, also
+        circle = mpatches.Circle((0,0), radius=protrad_cm, fill=False, edgecolor="blue", linestyle="--", label='Undeflected')
+        ax.add_patch(circle)
+        ax.set_xlim([np.min(bins_cm), np.max(bins_cm)])
+        ax.set_ylim([np.min(bins_cm), np.max(bins_cm)])
+        ax.set_aspect('equal')
+        plt.legend()
     
+        # Add colorbar, make sure to specify tick locations to match desired ticklabels
+        plt.xlabel('CR39, X (cm)')
+        plt.ylabel('CR39, Y (cm)')
+        #plt.colorbar(label='Protons/bin')
+        cbar = fig.colorbar(cax, label='Protons/cm$^2$')
+        plt.tight_layout()
+        #sb.jointplot(dat[:,0], dat[:,1], kind='hex')
+        
+        # Add footers
         tstring =  't=' + "{:.1f}".format(time_ns) + " ns" # Time string
         Estring =  "{:.1f}".format(protMeV) + " MeV" # Proton energy string
-        ax.text(0.05, 0.95, tstring, fontsize=18, color='black', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
-        ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
+        thead = ax.text(0.05, 0.95, tstring, fontsize=18, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
+        Efoot = ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
         fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
-        plt.savefig(os.path.join(outdir, "Radiograph_" + tlabel + ".png"), dpi=300)
+
+        ## Modified plot 1: Fluence-based proton radiograph        
+        vmax = np.max(H_pcm2/1.0e3)
+        cax = ax.pcolormesh(X, Y, (H_pcm2/1.0e3).T, cmap='Greys', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+        cbar.remove()
+        cbar = fig.colorbar(cax, label='10$^3$ Protons/cm$^2$')
+        plt.savefig(os.path.join(outdir, "RadiographCm2_" + tlabel + ".png"), dpi=300)
+
+        ## Modified plot 2: Bins-based proton radiograph        
+        vmax = np.ceil(np.max(H)/5.0)*5.0 # Round up to nearest 5 for the colormap max
+        cax = ax.pcolormesh(X, Y, H.T, cmap='Greys', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+        cbar.remove()
+        cbar = fig.colorbar(cax, label='Protons/bin')
+        plt.savefig(os.path.join(outdir, "RadiographBins_" + tlabel + ".png"), dpi=300)
         
+        ## Modified plot 3: Beam-relative contrast plot        
+        vmax = 3
+        thead.set_color('gray') # Change the color of header and footer within plots
+        Efoot.set_color('gray')
+        cax = ax.pcolormesh(X, Y, Hcontr2.T, cmap='RdBu', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+        cbar.remove()
+        cbar = fig.colorbar(cax, label='Contrast value: $\delta$(# Protons)/(Undeflected mean)')
+        plt.savefig(os.path.join(outdir, "ContrastBeam_" + tlabel + ".png"), dpi=300)
+    
+        ## Modified plot 4: Log2 contrast plot        
+        vmax = 5
+        cax = ax.pcolormesh(X, Y, Hlog2.T, cmap='RdBu', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+        cbar.remove()
+        cbar = fig.colorbar(cax, label='Contrast value: log$_2$(# Protons / # Undeflected protons)')
+        plt.savefig(os.path.join(outdir, "ContrastLog2_" + tlabel + ".png"), dpi=300)
         
         if dat.shape[1] >= 5:
             print("Making Energy spectrum plot")
