@@ -205,14 +205,14 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         Efoot.set_color('gray')
         cax = ax.pcolormesh(X, Y, Hcontr2.T, cmap='RdBu', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
         cbar.remove()
-        cbar = fig.colorbar(cax, label='Contrast value: $\delta$(# Protons)/(Undeflected mean)')
+        cbar = fig.colorbar(cax, label='Contrast value: $\delta$(Fluence) / Reference Fluence')
         plt.savefig(os.path.join(outdir, "ContrastBeam_" + tlabel + ".png"), dpi=300)
     
         ## Modified plot 4: Log2 contrast plot        
         vmax = 5
         cax = ax.pcolormesh(X, Y, Hlog2.T, cmap='RdBu', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
         cbar.remove()
-        cbar = fig.colorbar(cax, label='Contrast value: log$_2$(# Protons / # Undeflected protons)')
+        cbar = fig.colorbar(cax, label='Contrast value: log$_2$(Fluence / Reference Fluence)')
         plt.savefig(os.path.join(outdir, "ContrastLog2_" + tlabel + ".png"), dpi=300)
         
         if dat.shape[1] >= 5:
