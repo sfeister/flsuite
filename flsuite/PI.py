@@ -153,30 +153,6 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         cbar = fig.colorbar(cax, label='Protons/bin')
         plt.tight_layout()
         #sb.jointplot(dat[:,0], dat[:,1], kind='hex')
-
-        ## Figure 2: Fluence-based radiograph
-        fig = plt.figure(2)
-        plt.clf()
-        ax = fig.add_subplot(111)
-        ax.set_title('$FLASH\ protons:$ ' + simname + ', ' + str(apdegs) + '$^\circ$ ap.')
-        X, Y = np.meshgrid(xedges, yedges)
-        #vmax = 150.0
-        cax = ax.pcolormesh(X, Y, H.T, cmap='Greys', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
-        # Draw a circle, also
-        circle = mpatches.Circle((0,0), radius=protrad_cm, fill=False, edgecolor="blue", linestyle="--", label='Undeflected')
-        ax.add_patch(circle)
-        ax.set_xlim([np.min(bins_cm), np.max(bins_cm)])
-        ax.set_ylim([np.min(bins_cm), np.max(bins_cm)])
-        ax.set_aspect('equal')
-        plt.legend()
-    
-        # Add colorbar, make sure to specify tick locations to match desired ticklabels
-        plt.xlabel('CR39, X (cm)')
-        plt.ylabel('CR39, Y (cm)')
-        #plt.colorbar(label='Protons/bin')
-        cbar = fig.colorbar(cax, label='Protons/cm$^2$')
-        plt.tight_layout()
-        #sb.jointplot(dat[:,0], dat[:,1], kind='hex')
         
         # Add footers
         tstring =  't=' + "{:.1f}".format(time_ns) + " ns" # Time string
@@ -190,6 +166,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         cax = ax.pcolormesh(X, Y, (H_pcm2/1.0e3).T, cmap='Greys', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
         cbar.remove()
         cbar = fig.colorbar(cax, label='10$^3$ Protons/cm$^2$')
+        plt.tight_layout()
         plt.savefig(os.path.join(outdir, "RadiographCm2_" + tlabel + ".png"), dpi=300)
 
         ## Modified plot 2: Bins-based proton radiograph        
@@ -197,6 +174,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         cax = ax.pcolormesh(X, Y, H.T, cmap='Greys', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
         cbar.remove()
         cbar = fig.colorbar(cax, label='Protons/bin')
+        plt.tight_layout()
         plt.savefig(os.path.join(outdir, "RadiographBins_" + tlabel + ".png"), dpi=300)
         
         ## Modified plot 3: Beam-relative contrast plot        
@@ -206,6 +184,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         cax = ax.pcolormesh(X, Y, Hcontr2.T, cmap='RdBu', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
         cbar.remove()
         cbar = fig.colorbar(cax, label='Contrast value: $\delta$(Fluence) / Reference Fluence')
+        plt.tight_layout()
         plt.savefig(os.path.join(outdir, "ContrastBeam_" + tlabel + ".png"), dpi=300)
     
         ## Modified plot 4: Log2 contrast plot        
@@ -213,6 +192,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         cax = ax.pcolormesh(X, Y, Hlog2.T, cmap='RdBu', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
         cbar.remove()
         cbar = fig.colorbar(cax, label='Contrast value: log$_2$(Fluence / Reference Fluence)')
+        plt.tight_layout()
         plt.savefig(os.path.join(outdir, "ContrastLog2_" + tlabel + ".png"), dpi=300)
         
         if dat.shape[1] >= 5:
@@ -262,7 +242,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             plt.savefig(os.path.join(outdir, "ProtShiftLog_" + tlabel + ".png"), dpi=300)
 
         else:
-            print("No velocity data found; perhaps this was a pre-Oct2016 version of FLASH proton imaging.")
+            print("No velocity data found; skipping energy spectrum plots.")
 #        ## Figure 2 & 3: Other stuff
 #        #TODO: Plot the densest cell in CR-39 fashion??
 #        
