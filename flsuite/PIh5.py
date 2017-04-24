@@ -90,7 +90,7 @@ if __name__ == "__main__":
     #fn = r"C:\Users\Scott\Documents\temp\subdata.hdf5"
     fn = r"C:\Users\Scott\Documents\temp\april2017\testPItrack\0250\tdyno2016_forced_hdf5_plt_cnt_0000"
     trakarr = readh5(fn, overwrite=False)
-    np.random.shuffle(trakarr)
+    #np.random.shuffle(trakarr)
     
     print("Getting more info...")
     pathl, theta, posxyz, velxyz, accxyz = moreinfo(trakarr)
@@ -138,6 +138,7 @@ if __name__ == "__main__":
     #ax.set_ylim(-3000, 3000)
     #ax.set_xlim(0.27, 0.29)
 
+
     ## Histogram of times of flight, maps of init and final posits
     fig = plt.figure(3)
     fig.clear()
@@ -174,29 +175,21 @@ if __name__ == "__main__":
 
     plt.tight_layout()
 
-    
-    fig = plt.figure(10)
+    ## Theta vs. depth for a variety of particles
+    slct = (np.nanmax(posxyz[1,:,:],axis=1) > 0.3) # minimum x value
+
+    fig = plt.figure(4)
     fig.clear()
-    ax = fig.add_subplot(221)
+
     theta_rel = (theta.T - theta[:,0].T).T
     dtheta = np.gradient(theta, axis=1)
-    ax.pcolormesh(theta_rel[:,:200])
     
-    ax2 = fig.add_subplot(222)
-    ax2.plot(posxyz[1,:10,:].T, np.rad2deg(theta[:10,:].T))
-    ax2.set_title("Theta vs. Y depth (10 particles)")
-    ax2.set_ylabel("Theta (degs)")
-    ax2.set_xlabel("Spatial Y")
+    ax1 = fig.add_subplot(111)
+    nplt = 30 # Number of particles to plot here
+    nplt = min(nplt, np.sum(slct))
+    ax1.plot(posxyz[1,slct,:].T[:,:nplt], np.rad2deg(theta_rel[slct,:].T[:,:nplt]) + np.arange(nplt)*2.0)
+    ax1.set_title("$\Delta$Theta vs. Y depth (" + str(nplt) + " particles)")
+    ax1.set_ylabel("$\Delta$Theta (degs) + offset")
+    ax1.set_xlabel("Spatial Y (cm)")
 
-    ax3 = fig.add_subplot(223)
-    ax3.plot(dtheta[:2,:].T)
-    ax3.set_ylim(-0.006, 0.006)
-    ax3.set_title("dTheta vs. Step # (2 particles)")
-    ax3.set_ylabel("dTheta (drad)")
-
-    ax4 = fig.add_subplot(224)
-    ax4.plot(pathl[:10,:].T, np.rad2deg(theta[:10,:].T))
-    ax4.set_title("Theta vs. Path length (10 particles)")
-    ax4.set_ylabel("Theta (degs)")
-    ax4.set_xlabel("Path length")
     plt.tight_layout()
