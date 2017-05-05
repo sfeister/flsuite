@@ -25,8 +25,8 @@ import numpy as np
 import scipy.constants as sc
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches # Using this example to draw circles: http://matplotlib.org/examples/shapes_and_collections/artist_reference.html
+from scipy.stats import binned_statistic, binned_statistic_2d # Generalization of histogram, allowing averages within bins
 import sftools as sf
-
 
 # Works only for single-beam radiography!! TODO: Implement error if has more than one beam
 def piRead(fn):
@@ -43,7 +43,7 @@ def piRead(fn):
     return d
 
 # Expect this to be replaced with something more elegant soon.
-def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6):
+def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6, useVels=False, useDiags=True):
     """Performs a massive, custom analysis. Outputs plots in PIdir, unless outdir is specified.
     
     PIdir: Path to folder containing the PI outputs like blahblah_ProtonImagingMainPrint    
@@ -90,7 +90,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         p = re.compile(basenm + r'ProtonDetectorFile([0-9]+)_(\S*)') # Strip timestamp off filename end, e.g. tdyno2016PI_ProtonDetectorFile01_2.200E-08 ==> 2.2000E-08
         m = p.findall(fn)
         #detnum = int(m[0][0]) # Detector ID number (e.g. 1, 2, 3,..)
-        time_ns = float(m[0][1])*1e9 # Time step in nanoseconds
+        time_ns = float(m[0][1].strip('.gz'))*1e9 # Time step in nanoseconds
         tlabel = str(m[0][1])
         
         # Read in the proton file
@@ -100,7 +100,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             continue
         
         xy_cm = (dat[:,(0,1)] - 0.5) * width_cm # Convert scatter points from 0 to 1 grid up to centimeters
-    
+        
         ##################### DETAILED ANALYSIS ###################
         ## Make some plots
         # Calculate solid angle of CR39
@@ -195,7 +195,8 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         plt.tight_layout()
         plt.savefig(os.path.join(outdir, "ContrastLog2_" + tlabel + ".png"), dpi=300)
         
-        if dat.shape[1] >= 5:
+        if useVels:
+            ### ASSUMPTION 1: These values are velocities
             print("Making Energy spectrum plot")
             velxyz_mps = dat[:,(3,4,5)] * 1e-2 # Fourth, fifth, sixth columns are vx, vy, vz in cm/s. Convert to m/s
             vel_mps = np.sqrt(np.sum(velxyz_mps**2, 1)) # Magnitude of velocity, in m/s
@@ -240,9 +241,42 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             plt.ylabel('Number (a.u.)')
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
             plt.savefig(os.path.join(outdir, "ProtShiftLog_" + tlabel + ".png"), dpi=300)
+        
+        if useDiags:
+            ### ASSUMPTION 2: These values are magnetic field maps
+            print("Making magnetic field deflection maps...")
+            kx = dat[:,2]
+            ky = dat[:,3]
+            kz = dat[:,4]
+            J = dat[:,5]
+            Hkx, xedges, yedges, binnumber = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
+            Hky, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
+            Hkz, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
+            HJ, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
+            X, Y = np.meshgrid(xedges, yedges)
+            
+            ## kx, ky, kz, J plots: Mean values        
+            ### KX MEAN VALUE PLOT
+            fig = plt.figure(5)
+            fig.clear()
+            ax = fig.subplots(111)
+            vmax = np.nanmax(np.abs(Hkx))
+            cax = ax.pcolormesh(X, Y, Hkx.T, cmap='RdBu_r', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+            cbar = fig.colorbar(cax, label=r'Mean k$_x$ value')
+            ax.set_title(r'Mean of k$_x$')
+            ax.set_xlabel('CR39, X (cm)')
+            ax.set_ylabel('CR39, Y (cm)')
+            plt.tight_layout()
+            # Add footers
+            tstring =  't=' + "{:.1f}".format(time_ns) + " ns" # Time string
+            Estring =  "{:.1f}".format(protMeV) + " MeV" # Proton energy string
+            thead = ax.text(0.05, 0.95, tstring, fontsize=18, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
+            Efoot = ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
+            fig.savefig(os.path.join(outdir, "Kx_" + tlabel + ".png"), dpi=300)
 
         else:
-            print("No velocity data found; skipping energy spectrum plots.")
+            print("No velocity or Bx/By/Bz data found; skipping energy spectrum plots.")
 #        ## Figure 2 & 3: Other stuff
 #        #TODO: Plot the densest cell in CR-39 fashion??
 #        
