@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches # Using this example to draw circles: http://matplotlib.org/examples/shapes_and_collections/artist_reference.html
 from scipy.stats import binned_statistic, binned_statistic_2d # Generalization of histogram, allowing averages within bins
 import sftools as sf
+import h5py
 
 # Works only for single-beam radiography!! TODO: Implement error if has more than one beam
 def piRead(fn):
@@ -87,14 +88,24 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
     print("Reading protons...")
     # Loop over all the functions
     for fn in fns:
+        if fn[-4:] == '.npz':
+            continue
+           
         p = re.compile(basenm + r'ProtonDetectorFile([0-9]+)_(\S*)') # Strip timestamp off filename end, e.g. tdyno2016PI_ProtonDetectorFile01_2.200E-08 ==> 2.2000E-08
         m = p.findall(fn)
         #detnum = int(m[0][0]) # Detector ID number (e.g. 1, 2, 3,..)
-        time_ns = float(m[0][1].strip('.gz'))*1e9 # Time step in nanoseconds
-        tlabel = str(m[0][1])
+        time_ns = float(m[0][1].replace('.gz', ''))*1e9 # Time step in nanoseconds
+        tlabel = str(m[0][1].replace('.gz', ''))
         
-        # Read in the proton file
-        dat = np.genfromtxt(fn)
+        if os.path.isfile(fn.replace('.gz', '') + '.gz.npz'):
+            print("(Reading compressed npz detector file)")
+            with np.load(fn.replace('.gz', '') + '.gz.npz') as data:
+                dat = data['dat']
+        else:
+            print("(Reading regular or gzipped detector file)")
+            dat = np.genfromtxt(fn)
+            np.savez_compressed(fn.replace('.gz', '') + '.gz.npz', dat=dat)
+
         if len(np.atleast_1d(dat.flatten())) < 1:
             print("File contents empty : " + fn + ". Moving on...")
             continue
@@ -245,24 +256,54 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         if useDiags:
             ### ASSUMPTION 2: These values are magnetic field maps
             print("Making magnetic field deflection maps...")
-            kx = dat[:,2]
-            ky = dat[:,3]
-            kz = dat[:,4]
-            J = dat[:,5]
-            Hkx, xedges, yedges, binnumber = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
-            Hky, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
-            Hkz, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
-            HJ, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
-            X, Y = np.meshgrid(xedges, yedges)
+            print dat.shape
+            J = dat[:,2]
+            kx = dat[:,3]
+            ky = dat[:,4]
+            kz = dat[:,5]
+            Hkx, _, _, binnumber = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kx, statistic='mean', bins=bins_cm)
+            Hky, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], ky, statistic='mean', bins=bins_cm)
+            Hkz, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kz, statistic='mean', bins=bins_cm)
+            HJ, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], J, statistic='mean', bins=bins_cm)
+            # X, Y = np.meshgrid(xedges, yedges)
             
+            with h5py.File(os.path.join(outdir, 'Radiograph.h5'), 'w') as f:
+                dset = f.create_dataset("Meankx", data=Hkx.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic kx (see user guide)'
+                dset.attrs['units'] = 'G*cm'
+                dset = f.create_dataset("Meanky", data=Hky.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic ky (see user guide)'
+                dset.attrs['units'] = 'G*cm'
+                dset = f.create_dataset("Meankz", data=Hkz.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic kz (see user guide)'
+                dset.attrs['units'] = 'G*cm'
+                dset = f.create_dataset("MeanJ", data=Hkz.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic J (see user guide)'
+                dset = f.create_dataset("Counts", data=H.T)
+                dset.attrs['Description'] = 'Proton counts per bin'
+                dset.attrs['units'] = 'protons'
+                dset = f.create_dataset("ax0edges_cm", data=xedges)
+                dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis0 dimension'
+                dset.attrs['units'] = 'cm'
+                dset = f.create_dataset("ax1edges_cm", data=yedges)
+                dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis1 dimension'
+                dset.attrs['units'] = 'cm'
+                f.attrs['SimTime_ns'] = time_ns
+                f.attrs['SimName'] = simname
+                f.attrs['ProtonEnergy_MeV'] = protMeV
+                f.attrs['BeamApertureAngle_degs'] = apdegs
+                f.attrs['Detector2Capsule_cm'] = dist_cm
+                f.attrs['BeamProtonCount'] = nprotons
+                f.attrs['BinWidth_um'] = bin_um
+                
             ## kx, ky, kz, J plots: Mean values        
             ### KX MEAN VALUE PLOT
             fig = plt.figure(5)
             fig.clear()
-            ax = fig.subplots(111)
-            vmax = np.nanmax(np.abs(Hkx))
-            cax = ax.pcolormesh(X, Y, Hkx.T, cmap='RdBu_r', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
-            cbar = fig.colorbar(cax, label=r'Mean k$_x$ value')
+            ax = fig.add_subplot(111)
+            vmax = np.nanmax(np.abs(Hkx/1e3))
+            cax = ax.pcolormesh(X, Y, Hkx.T/1e3, cmap='RdBu_r', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+            cbar = fig.colorbar(cax, label=r'Mean k$_x$ value (kG * cm)')
             ax.set_title(r'Mean of k$_x$')
             ax.set_xlabel('CR39, X (cm)')
             ax.set_ylabel('CR39, Y (cm)')
@@ -274,6 +315,63 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             Efoot = ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
             fig.savefig(os.path.join(outdir, "Kx_" + tlabel + ".png"), dpi=300)
+
+            ### KY MEAN VALUE PLOT
+            fig = plt.figure(6)
+            fig.clear()
+            ax = fig.add_subplot(111)
+            vmax = np.nanmax(np.abs(Hky/1e3))
+            cax = ax.pcolormesh(X, Y, Hky.T/1e3, cmap='RdBu_r', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+            cbar = fig.colorbar(cax, label=r'Mean k$_y$ value (kG * cm)')
+            ax.set_title(r'Mean of k$_y$')
+            ax.set_xlabel('CR39, X (cm)')
+            ax.set_ylabel('CR39, Y (cm)')
+            plt.tight_layout()
+            # Add footers
+            tstring =  't=' + "{:.1f}".format(time_ns) + " ns" # Time string
+            Estring =  "{:.1f}".format(protMeV) + " MeV" # Proton energy string
+            thead = ax.text(0.05, 0.95, tstring, fontsize=18, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
+            Efoot = ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
+            fig.savefig(os.path.join(outdir, "Ky_" + tlabel + ".png"), dpi=300)
+
+            ### KZ MEAN VALUE PLOT
+            fig = plt.figure(7)
+            fig.clear()
+            ax = fig.add_subplot(111)
+            vmax = np.nanmax(np.abs(Hkz/1e3))
+            cax = ax.pcolormesh(X, Y, Hkz.T/1e3, cmap='RdBu_r', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+            cbar = fig.colorbar(cax, label=r'Mean k$_z$ value (kG * cm)')
+            ax.set_title(r'Mean of k$_z$')
+            ax.set_xlabel('CR39, X (cm)')
+            ax.set_ylabel('CR39, Y (cm)')
+            plt.tight_layout()
+            # Add footers
+            tstring =  't=' + "{:.1f}".format(time_ns) + " ns" # Time string
+            Estring =  "{:.1f}".format(protMeV) + " MeV" # Proton energy string
+            thead = ax.text(0.05, 0.95, tstring, fontsize=18, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
+            Efoot = ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
+            fig.savefig(os.path.join(outdir, "Kz_" + tlabel + ".png"), dpi=300)
+
+            ### J MEAN VALUE PLOT
+            fig = plt.figure(8)
+            fig.clear()
+            ax = fig.add_subplot(111)
+            vmax = np.nanmax(np.abs(HJ))
+            cax = ax.pcolormesh(X, Y, HJ.T, cmap='RdBu_r', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+            cbar = fig.colorbar(cax, label=r'Mean J value')
+            ax.set_title(r'Mean of J')
+            ax.set_xlabel('CR39, X (cm)')
+            ax.set_ylabel('CR39, Y (cm)')
+            plt.tight_layout()
+            # Add footers
+            tstring =  't=' + "{:.1f}".format(time_ns) + " ns" # Time string
+            Estring =  "{:.1f}".format(protMeV) + " MeV" # Proton energy string
+            thead = ax.text(0.05, 0.95, tstring, fontsize=18, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='top') # Upper left within axis (transform=ax.transAxes sets it into axis units 0 to 1)
+            Efoot = ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
+            fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
+            fig.savefig(os.path.join(outdir, "J_" + tlabel + ".png"), dpi=300)
 
         else:
             print("No velocity or Bx/By/Bz data found; skipping energy spectrum plots.")
