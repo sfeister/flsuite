@@ -3,6 +3,7 @@
 # Make an ffmpeg movie more or less compatible with Powerpoint (unless png size is too big)
 # Call via "ffmov [directory]"
 
+# TODO: Much better documentation, enforce folder inputs, etc.
 pngdir=$1
 dirname=$(basename $pngdir)
 
