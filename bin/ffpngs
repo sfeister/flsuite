@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Make an ffmpeg movie more or less compatible with Powerpoint (unless png size is too big)
+# Call via "ffmov [directory]"
+
+pngdir=$1
+cd $pngdir
+ffmpeg -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p "../$pngdir.mp4"
