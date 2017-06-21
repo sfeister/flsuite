@@ -44,7 +44,7 @@ def piRead(fn):
     return d
 
 # Expect this to be replaced with something more elegant soon.
-def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6, useVels=False, useDiags=True):
+def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6, useVels=False, useDiags=True, showlegend=True):
     """Performs a massive, custom analysis. Outputs plots in PIdir, unless outdir is specified.
     
     PIdir: Path to folder containing the PI outputs like blahblah_ProtonImagingMainPrint    
@@ -155,7 +155,8 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         ax.set_xlim([np.min(bins_cm), np.max(bins_cm)])
         ax.set_ylim([np.min(bins_cm), np.max(bins_cm)])
         ax.set_aspect('equal')
-        plt.legend()
+        if showlegend:
+            plt.legend()
     
         # Add colorbar, make sure to specify tick locations to match desired ticklabels
         plt.xlabel('CR39, X (cm)')
