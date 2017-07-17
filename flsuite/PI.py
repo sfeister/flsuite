@@ -138,6 +138,9 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         #Hcontr = (H - np.mean(H)) / np.mean(H) # A very simple contrast map; just divide by the mean # TODO: IMPROVE THIS!
         Hcontr2 = (H_pcm2 - beam_pcm2) / beam_pcm2
         Hlog2 = np.log2(H_pcm2/beam_pcm2)
+        
+        Hnorm = H_pcm2 / beam_pcm2 # Value divided by the mean
+     
      
         print "Making PI plot..."
         ## Figure 1: Main radiograph (template for modified graphs; not saved)
@@ -189,7 +192,15 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         plt.tight_layout()
         plt.savefig(os.path.join(outdir, "RadiographBins_" + tlabel + ".png"), dpi=300)
         
-        ## Modified plot 3: Beam-relative contrast plot        
+        ## Modified plot 3: Normalized counts plot        
+        vmax = 2.5
+        cax = ax.pcolormesh(X, Y, Hnorm.T, cmap='tab20c', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+        cbar.remove()
+        cbar = fig.colorbar(cax, label='Normalized counts: Fluence / Reference Fluence')
+        plt.tight_layout()
+        plt.savefig(os.path.join(outdir, "NormCounts_" + tlabel + ".png"), dpi=300)
+
+        ## Modified plot 4: Beam-relative contrast plot        
         vmax = 3
         thead.set_color('gray') # Change the color of header and footer within plots
         Efoot.set_color('gray')
@@ -199,7 +210,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         plt.tight_layout()
         plt.savefig(os.path.join(outdir, "ContrastBeam_" + tlabel + ".png"), dpi=300)
     
-        ## Modified plot 4: Log2 contrast plot        
+        ## Modified plot 5: Log2 contrast plot        
         vmax = 5
         cax = ax.pcolormesh(X, Y, Hlog2.T, cmap='RdBu', vmin=-vmax, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
         cbar.remove()
@@ -207,6 +218,25 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         plt.tight_layout()
         plt.savefig(os.path.join(outdir, "ContrastLog2_" + tlabel + ".png"), dpi=300)
         
+        with h5py.File(os.path.join(outdir, 'NormCounts.h5'), 'w') as f:
+            dset = f.create_dataset("NormCounts", data=Hnorm.T)
+            dset.attrs['Description'] = 'Proton fluence (counts per area) divided by fluence in absence of deflection'
+            dset.attrs['units'] = 'unitless'
+            dset = f.create_dataset("ax0edges_cm", data=xedges)
+            dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis0 dimension'
+            dset.attrs['units'] = 'cm'
+            dset = f.create_dataset("ax1edges_cm", data=yedges)
+            dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis1 dimension'
+            dset.attrs['units'] = 'cm'
+            f.attrs['SimTime_ns'] = time_ns
+            f.attrs['SimName'] = simname
+            f.attrs['ProtonEnergy_MeV'] = protMeV
+            f.attrs['BeamApertureAngle_degs'] = apdegs
+            f.attrs['Detector2Capsule_cm'] = dist_cm
+            f.attrs['BeamProtonCount'] = nprotons
+            f.attrs['BinWidth_um'] = bin_um
+            f.attrs['NormFluence_protonspercm2'] = beam_pcm2
+
         if useVels:
             ### ASSUMPTION 1: These values are velocities
             print("Making Energy spectrum plot")
@@ -253,7 +283,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             plt.ylabel('Number (a.u.)')
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
             plt.savefig(os.path.join(outdir, "ProtShiftLog_" + tlabel + ".png"), dpi=300)
-        
+                
         if useDiags:
             ### ASSUMPTION 2: These values are magnetic field maps
             print("Making magnetic field deflection maps...")
