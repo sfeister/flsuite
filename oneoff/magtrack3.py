@@ -346,7 +346,7 @@ def plotTstreak(anlsT, outdir='.'):
 
         fld = 'nele' # Electron density (per cm^3)
         fld_mult = 1
-        name = "Ion density"
+        name = "Electron density"
         units = "1/cm^3" # Use default units
         fig = customstreak1(anlsT, lbl, fld, fld_mult, name, units, zgv, tgv, rad_mm, outdir, simname)
 
