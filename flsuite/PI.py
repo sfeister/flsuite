@@ -102,9 +102,10 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             with np.load(fn.replace('.gz', '') + '.gz.npz') as data:
                 dat = data['dat']
         else:
-            print("(Reading regular or gzipped detector file)")
+            print("(Reading regular or gzipped detector file, then deleting the original.)")
             dat = np.genfromtxt(fn)
             np.savez_compressed(fn.replace('.gz', '') + '.gz.npz', dat=dat)
+            os.remove(fn)
 
         if len(np.atleast_1d(dat.flatten())) < 1:
             print("File contents empty : " + fn + ". Moving on...")
