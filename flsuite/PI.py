@@ -88,23 +88,26 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
     print("Reading protons...")
     # Loop over all the functions
     for fn in fns:
-        if fn[-4:] == '.npz':
-            continue
-           
+        #if fn[-4:] == '.npz':
+        #    continue
+        # TODO: Avoid duplicates from npz
+        
         p = re.compile(basenm + r'ProtonDetectorFile([0-9]+)_(\S*)') # Strip timestamp off filename end, e.g. tdyno2016PI_ProtonDetectorFile01_2.200E-08 ==> 2.2000E-08
         m = p.findall(fn)
         #detnum = int(m[0][0]) # Detector ID number (e.g. 1, 2, 3,..)
-        time_ns = float(m[0][1].replace('.gz', ''))*1e9 # Time step in nanoseconds
-        tlabel = str(m[0][1].replace('.gz', ''))
+        time_ns = float(m[0][1].replace('.gz', '').replace('.npz', ''))*1e9 # Time step in nanoseconds
+        tlabel = str(m[0][1].replace('.gz', '').replace('.npz', ''))
         
-        if os.path.isfile(fn.replace('.gz', '') + '.gz.npz'):
+        if os.path.isfile(fn + '.gz.npz') or os.path.isfile(fn + '.npz'):
+            continue
+        elif fn[-4:] == '.npz':
             print("(Reading compressed npz detector file)")
-            with np.load(fn.replace('.gz', '') + '.gz.npz') as data:
+            with np.load(fn) as data:
                 dat = data['dat']
         else:
             print("(Reading regular or gzipped detector file, then deleting the original.)")
             dat = np.genfromtxt(fn)
-            np.savez_compressed(fn.replace('.gz', '') + '.gz.npz', dat=dat)
+            np.savez_compressed(fn.replace('.gz', '') + '.npz', dat=dat)
             os.remove(fn)
 
         if len(np.atleast_1d(dat.flatten())) < 1:
@@ -143,7 +146,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         Hnorm = H_pcm2 / beam_pcm2 # Value divided by the mean
      
      
-        print "Making PI plot..."
+        print("Making PI plot...")
         ## Figure 1: Main radiograph (template for modified graphs; not saved)
         fig = plt.figure(1)
         plt.clf()
@@ -200,6 +203,14 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         cbar = fig.colorbar(cax, label='Normalized counts: Fluence / Reference Fluence')
         plt.tight_layout()
         plt.savefig(os.path.join(outdir, "NormCounts_" + tlabel + ".png"), dpi=300)
+
+        ## Modified plot 3.5: Normalized counts plot, in Grayscale 
+        vmax = 10
+        cax = ax.pcolormesh(X, Y, Hnorm.T, cmap='Greys', vmin=0, vmax=vmax) # Transpose needed because H array is organized H[xindex, yindex] but this is flipped from what pcolormesh, meshgrid output. (E.g. X[:,1] gives a uniform number)
+        cbar.remove()
+        cbar = fig.colorbar(cax, label='Normalized counts: Fluence / Reference Fluence')
+        plt.tight_layout()        
+        plt.savefig(os.path.join(outdir, "NormCountsGS_" + tlabel + ".png"), dpi=300)
 
         ## Modified plot 4: Beam-relative contrast plot        
         vmax = 3
