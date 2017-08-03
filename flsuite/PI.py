@@ -44,7 +44,7 @@ def piRead(fn):
     return d
 
 # Expect this to be replaced with something more elegant soon.
-def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6, useVels=False, useDiags=True, showlegend=True):
+def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pitdiam_um = 10, bin_um = 332.6, useVels=False, useDiags=True, showlegend=True, delOrig=False):
     """Performs a massive, custom analysis. Outputs plots in PIdir, unless outdir is specified.
     
     PIdir: Path to folder containing the PI outputs like blahblah_ProtonImagingMainPrint    
@@ -105,10 +105,15 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             with np.load(fn) as data:
                 dat = data['dat']
         else:
-            print("(Reading regular or gzipped detector file, then deleting the original.)")
+            print("(Reading regular or gzipped detector file.)")
+            if delOrig:
+                print("(After this, will delete the original. (delOrig = True))")
+            else:
+                print("(Will preserve the original. (delOrig = False))")                
             dat = np.genfromtxt(fn)
             np.savez_compressed(fn.replace('.gz', '') + '.npz', dat=dat)
-            os.remove(fn)
+            if delOrig: # Delete the original, if "delOrig" input is set to True
+                os.remove(fn)
 
         if len(np.atleast_1d(dat.flatten())) < 1:
             print("File contents empty : " + fn + ". Moving on...")
