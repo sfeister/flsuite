@@ -9,7 +9,7 @@ General tools used by Scott Feister (SF).
 
 import os
 import numpy as np
-
+import re
 
 # NumPy arrays
 def findNearest(array, value):
@@ -53,7 +53,41 @@ def getfns(folder, ext = '', prefix = ''):
         if file.endswith(ext) and file.startswith(prefix):
             fns.append(os.path.join(folder, file))
     return fns
+
+def getH5Outs(folder, basenm = 'lasslab_', h5type = 'plt'):
+    """ Get a sorted list of full path filenames for all files '[basenm]hdf5_[h5type]_cnt_####' in a folder, sorted by number ####"""
+    # Inputs:
+    #   folder: a file path to the folder, e.g. "/home/myouts", which contains files like 'lasslab_hdf5_plt_cnt_0003'
+    #   basenm: string with which the filename starts, e.g. 'lasslab_' for hdf5 files matching '.../lasslab_hdf5_*.p4'
+    #   h5type: string to specify plotfiles or checkpoint files; either 'plt' or 'chk'
+    # Outputs:
+    #   fns: a list of (sorted) full paths to files matching '[basenm]hdf5_[h5type]_cnt_####'
+    #       E.g.: fns = ['/home/myouts/lasslab_hdf5_plt_cnt_0000', '/home/myouts/lasslab_hdf5_plt_cnt_0001', '/home/myouts/lasslab_hdf5_plt_cnt_0002']
     
+    fns = [] # Will store the list of filenames
+    nums = [] # Will store a list of the #### numbers in '[basenm]hdf5_[h5type]_cnt_####.p4'
+    
+    if h5type == 'plt':
+        pattern = r'^(' + basenm + r'hdf5_plt_cnt_)(\d{4})$'
+    elif h5type == 'chk':
+        pattern = r'^(' + basenm + r'hdf5_chk_)(\d{4})$'
+    else:
+        raise(Exception("Unknown FLASH output label: " + str(h5type)))
+    
+    for name in os.listdir(folder): # note 'file' can be a file, directory, etc.
+        m = re.search(pattern, name)
+        if m: # If the filename matches the pattern, add this file to the list
+            fns.append(os.path.join(folder, name))
+            
+            # Extract "####" as a number
+            fnum = int(re.split(pattern, name)[2])
+            nums.append(fnum)
+
+    # Sort the field names by their "####" number    
+    idx = np.argsort(nums) # Get a list of sorted indices such that the filenames will be sorted correctly by time step
+    fns = np.array(fns)[idx].tolist() # Convert filenames list to a numpy string array for advanced indexing, then convert back to a python list
+    return fns, nums
+
 def subdir(folder, name):
     """ Make a subdirectory in the specified folder, if it doesn't already exist"""
     subpath = os.path.join(folder,name)
