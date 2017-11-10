@@ -24,6 +24,11 @@ usage(){
     echo "Outputs:"
     echo "  Creates 'directory1.mp4', in the folder containing 'directory1.'"
     echo "  Repeats this for each input (directory2, directory3, ...)"
+    echo "  Note: Skips over any inputs that are not directories."
+    echo "Example usage:"
+    echo "  ffpngs -f 25 -s 0.5 plotdir*"
+    echo "  (Analyzes ./plotdir5/, ./plotdir_Bmag/, and ./plotdir_E/ directories."
+    echo "   Skips over non-folder ./plotdir_test.mp4.)"
 }
 
 # Set defaults
