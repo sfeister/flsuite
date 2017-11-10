@@ -14,10 +14,11 @@
 usage(){
     echo "Converts folder(s) of pngs into mp4(s), using ffmpeg"
     echo "Syntax:"
-    echo "  ffpngs [-y] [-f framerate] [-s scalefact] directory1 [directory2, ...]"
+    echo "  ffpngs [-h] [-y] [-f framerate] [-s scalefact] directory1 [directory2, ...]"
     echo "Main argument(s):"
     echo "  directory1      Specifies a folder containing series of png images"
     echo "Optional flags:"
+    echo "  -h              Display this help"
     echo "  -y              Overwrite without asking"
     echo "  -f framerate    Sets the framerate (default 10)"
     echo "  -s scalefact    Rescales png width and height by scalefact (default 1)"
