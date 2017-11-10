@@ -1,25 +1,43 @@
 #!/bin/bash
 
 # Make an ffmpeg movie more or less compatible with Powerpoint (unless png size is too big)
-# Call via "ffpngs [-y] [-f framerate] directory1 [directory2, ...]"
-# Where -y flag says to overwrite without asking, and the argument of -f sets the framerate
+# Call via "ffpngs [-y] [-f framerate] [-s scalefact] directory1 [directory2, ...]"
+#   -y              Overwrite without asking
+#   -f framerate    Sets the framerate (default 10)
+#   -s scalefact    Rescales png width and height by scalefact (default 1)
+
 # Creates an .mp4 movie for each directory, in the same folder as the directory
 
 # Large sections of this script were copied from: https://stackoverflow.com/questions/31124009/how-do-i-pass-in-optional-flags-and-parameters-to-bash-script
 # Other parts were written by Scott Feister, November 2017
 
-# TODO: Adapt to 
+usage(){
+    echo "Converts folder(s) of pngs into mp4(s), using ffmpeg"
+    echo "Syntax:"
+    echo "  ffpngs [-y] [-f framerate] [-s scalefact] directory1 [directory2, ...]"
+    echo "Main argument(s):"
+    echo "  directory1      Specifies a folder containing series of png images"
+    echo "Optional flags:"
+    echo "  -y              Overwrite without asking"
+    echo "  -f framerate    Sets the framerate (default 10)"
+    echo "  -s scalefact    Rescales png width and height by scalefact (default 1)"
+    echo "Outputs:"
+    echo "  Creates 'directory1.mp4', in the folder containing 'directory1.'"
+    echo "  Repeats this for each input (directory2, directory3, ...)"
+}
 
 # Set defaults
 FRAMERATE=10
+SCALEFACT=1
 YFLAG=""
 
-# Update defaults
-while getopts :hyf opt; do
+# Extract all the arguments
+while getopts :hyf:s: opt; do
     case $opt in 
-        h) echo "ffpngs [-y] [-f framerate] directory1 [directory2, ...]"; exit ;;
-        y) YFLAG="-y" ;;
-        f) FRAMERATE=$OPTARG ;;
+        h) usage; exit 1;;
+        y) YFLAG="-y"; echo "-y flag set." ;;
+        f) FRAMERATE=$OPTARG; echo "Framerate set" ;;
+        s) SCALEFACT=$OPTARG; echo "Scale factor set" ;;
         :) echo "Missing argument for option -$OPTARG"; exit 1;;
        \?) echo "Unknown option -$OPTARG"; exit 1;;
     esac
@@ -27,7 +45,7 @@ done
 
 shift $(( OPTIND - 1 ))
 
-if [ -z "$@" ]; then
+if [ -z "$1" ]; then
     echo "No directory specified. Try 'ffpngs -h' for help."
     exit 1
 fi
@@ -40,7 +58,7 @@ for pngdir in "$@"; do
     if [ -d "$pngdir" ]; then
         echo "Attempting to make video of directory '$dirname'"
         cd $pngdir
-        ffmpeg $YFLAG -framerate $FRAMERATE -pattern_type glob -i '*.png' -vf "[in]scale=iw:ih[middle];[middle]crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0[out]" -c:v libx264 -pix_fmt yuv420p "../$dirname.mp4"
+        ffmpeg $YFLAG -framerate $FRAMERATE -pattern_type glob -i '*.png' -vf "[in]scale=iw*${SCALEFACT}:ih*${SCALEFACT}[middle];[middle]crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0[out]" -c:v libx264 -pix_fmt yuv420p "../$dirname.mp4"
     else
         echo "'$dirname' is not a directory. Skipping."
     fi
