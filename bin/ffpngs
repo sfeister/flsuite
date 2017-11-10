@@ -38,9 +38,6 @@ FRAMERATE=10
 SCALEFACT=1
 YFLAG=""
 
-# Check that ffmpeg is installed (copied from https://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script)
-command -v ffmpeg >/dev/null 2>&1 || { echo >&2 "ffpngs requires ffmpeg but it's not installed.  Aborting."; exit 1; }
-
 # Extract all the arguments
 while getopts :hyf:s: opt; do
     case $opt in 
@@ -54,6 +51,9 @@ while getopts :hyf:s: opt; do
 done
 
 shift $(( OPTIND - 1 ))
+
+# Check that ffmpeg is installed (copied from https://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script)
+command -v ffmpeg >/dev/null 2>&1 || { echo >&2 "ffpngs requires ffmpeg but it's not installed.  Aborting."; exit 1; }
 
 if [ -z "$1" ]; then
     echo "No directory specified. Try 'ffpngs -h' for help."
