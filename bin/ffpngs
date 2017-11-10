@@ -1,12 +1,47 @@
 #!/bin/bash
 
 # Make an ffmpeg movie more or less compatible with Powerpoint (unless png size is too big)
-# Call via "ffpngs [directory]"
-# Creates a movie in the directory above
+# Call via "ffpngs [-y] [-f framerate] directory1 [directory2, ...]"
+# Where -y flag says to overwrite without asking, and the argument of -f sets the framerate
+# Creates an .mp4 movie for each directory, in the same folder as the directory
 
-# TODO: Much better documentation, enforce folder inputs, etc.
-pngdir=$1
-dirname=$(basename $pngdir)
+# Large sections of this script were copied from: https://stackoverflow.com/questions/31124009/how-do-i-pass-in-optional-flags-and-parameters-to-bash-script
+# Other parts were written by Scott Feister, November 2017
 
-cd $pngdir
-ffmpeg -framerate 10 -pattern_type glob -i '*.png' -vf "[in]scale=iw:ih[middle];[middle]crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0[out]" -c:v libx264 -pix_fmt yuv420p "../$dirname.mp4"
+# TODO: Adapt to 
+
+# Set defaults
+FRAMERATE=10
+YFLAG=""
+
+# Update defaults
+while getopts :hyf opt; do
+    case $opt in 
+        h) echo "ffpngs [-y] [-f framerate] directory1 [directory2, ...]"; exit ;;
+        y) YFLAG="-y" ;;
+        f) FRAMERATE=$OPTARG ;;
+        :) echo "Missing argument for option -$OPTARG"; exit 1;;
+       \?) echo "Unknown option -$OPTARG"; exit 1;;
+    esac
+done
+
+shift $(( OPTIND - 1 ))
+
+if [ -z "$@" ]; then
+    echo "No directory specified. Try 'ffpngs -h' for help."
+    exit 1
+fi
+
+CALLDIR=$(pwd)
+
+for pngdir in "$@"; do
+    cd $CALLDIR
+    dirname=$(basename $pngdir)
+    if [ -d "$pngdir" ]; then
+        echo "Attempting to make video of directory '$dirname'"
+        cd $pngdir
+        ffmpeg $YFLAG -framerate $FRAMERATE -pattern_type glob -i '*.png' -vf "[in]scale=iw:ih[middle];[middle]crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0[out]" -c:v libx264 -pix_fmt yuv420p "../$dirname.mp4"
+    else
+        echo "'$dirname' is not a directory. Skipping."
+    fi
+done

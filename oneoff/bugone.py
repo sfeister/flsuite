@@ -21,7 +21,7 @@ from datetime import datetime
 
 if __name__ == "__main__":
     # Note that this will run in parallel, so no prints please
-    datdir = r'/gpfs/mira-fs0/projects/CosmicLaser/tzeferac/NIF/TDYNO_BAND' # Directory holding HDF5 FLASH outputs
+    datdir = r'/gpfs/mira-fs1/projects/CosmicLaser_DD/tzeferac/NIF/TDYNO_BAND' # Directory holding HDF5 FLASH outputs
     basenm = r'tdyno2016_' # Prefix for plot filenames, which is defined as "basenm" in the flash.par file
     fnpatt = os.path.join(datdir, basenm + 'hdf5_plt_cnt_????') # yt-time-series filename pattern for plot files
 
