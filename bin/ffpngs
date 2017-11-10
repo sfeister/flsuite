@@ -1,13 +1,8 @@
 #!/bin/bash
-
-# Make an ffmpeg movie more or less compatible with Powerpoint (unless png size is too big)
-# Call via "ffpngs [-y] [-f framerate] [-s scalefact] directory1 [directory2, ...]"
-#   -y              Overwrite without asking
-#   -f framerate    Sets the framerate (default 10)
-#   -s scalefact    Rescales png width and height by scalefact (default 1)
-
-# Creates an .mp4 movie for each directory, in the same folder as the directory
-
+#
+# ffpngs: Make an ffmpeg movie more or less compatible with Powerpoint (unless png size is too big)
+# See syntax details below, in "usage" function.
+#
 # Large sections of this script were copied from: https://stackoverflow.com/questions/31124009/how-do-i-pass-in-optional-flags-and-parameters-to-bash-script
 # One line is taken from: https://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
 # Other parts were written by Scott Feister, November 2017
