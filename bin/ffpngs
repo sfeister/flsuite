@@ -55,14 +55,14 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-CALLDIR=$(pwd)
+CALLDIR="$(pwd)"
 
 for pngdir in "$@"; do
-    cd $CALLDIR
-    dirname=$(basename $pngdir)
+    cd "$CALLDIR"
+    dirname=$(basename "$pngdir")
     if [ -d "$pngdir" ]; then
         echo "Attempting to make video of directory '$dirname'"
-        cd $pngdir
+        cd "$pngdir"
         ffmpeg $YFLAG -framerate $FRAMERATE -pattern_type glob -i '*.png' -vf "[in]scale=iw*${SCALEFACT}:ih*${SCALEFACT}[middle];[middle]crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0[out]" -c:v libx264 -pix_fmt yuv420p "../$dirname.mp4"
     else
         echo "'$dirname' is not a directory. Skipping."
