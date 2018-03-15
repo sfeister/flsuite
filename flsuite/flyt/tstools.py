@@ -11,6 +11,7 @@ import flsuite.flyt.tstools as tst
 CHANGELOG:
 2016-10-05 Created tstools.py, filled with some functions from tstest3.py
 2016-10-13 Greatly expanded the scope, automating post-analysis.
+2018-03-15 Added support for Python3
 
 TODO:
 * Tie together plotT and anlsD, perhaps making a class!
@@ -19,8 +20,14 @@ TODO:
 """
 
 import os
+import sys
 import numpy as np
-import cPickle as pickle
+if (sys.version_info > (3, 0)):
+    # Python 3 code in this block
+    import pickle
+else:
+    # Python 2 code in this block
+    import cPickle as pickle
 import matplotlib
 matplotlib.use('Agg') # Headless plotting
 import matplotlib.pyplot as plt
@@ -107,13 +114,13 @@ def anlzT(ts, anlzD, outdir='.', plotT=None):
     numfiles = len(ts)
 
     if yt.is_root():
-        print "Number of files to analyze:", numfiles
+        print("Number of files to analyze:" + str(numfiles))
         
     ## Analyze datasets using yt parallelization
     storage = {} # Define an empty storage dictionary for collecting information in parallel through processing
 
     for sto, ds in ts.piter(storage=storage): # Iterate over datasets ds in time-series ts
-        print "Reading file:", ds
+        print("Reading file:" + str(ds))
         anlsD = anlzD(ds, outdir=outdir) # It would be nice not to require the outdir argument
         
         if not isinstance(anlsD, dict): # If for some reason it returned something other than a dictionary
