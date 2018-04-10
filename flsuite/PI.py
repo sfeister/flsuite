@@ -26,7 +26,7 @@ import scipy.constants as sc
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches # Using this example to draw circles: http://matplotlib.org/examples/shapes_and_collections/artist_reference.html
 from scipy.stats import binned_statistic, binned_statistic_2d # Generalization of histogram, allowing averages within bins
-import sftools as sf
+from . import sftools as sf
 import h5py
 
 # Works only for single-beam radiography!! TODO: Implement error if has more than one beam
@@ -130,7 +130,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         # Calculate the undeflected beam radius
         protrad_cm = dist_cm * np.tan(np.deg2rad(apdegs/2))# Radius of undeflected cone on CR39, in centimeters
     
-        print "Histogramming..."
+        print("Histogramming...")
         # Bin the data, according to the square bin edge size
         # Following example at: http://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram2d.html
         bins_cm = np.arange(-width_cm/2, width_cm/2, bin_um*1e-4) # 1D array of bin edges, in centimetres
@@ -304,7 +304,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
         if useDiags:
             ### ASSUMPTION 2: These values are magnetic field maps
             print("Making magnetic field deflection maps...")
-            print dat.shape
+            print(dat.shape)
             J = dat[:,2]
             kx = dat[:,3]
             ky = dat[:,4]
@@ -436,7 +436,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
 #        ct = (dat_cm[:,0] > xmin) & (dat_cm[:,0] < xmax) & (dat_cm[:,1] > ymin) & (dat_cm[:,1] < ymax)
 #        subdat_cm = dat_cm[ct,:]
 #        numpits = subdat_cm.shape[0] # Total number of pits to be plotted
-#        print "Making the pits plot (" + str(numpits) + " pits)..."
+#        print("Making the pits plot (" + str(numpits) + " pits)...")
 #        
 #        
 #        fig = plt.figure(2)
@@ -475,8 +475,8 @@ if __name__ == "__main__":
     PIdirs = [x[0] for x in os.walk(r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE")][1:]
     #PIdir = r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE\PIN-10-1p0-15"
     for PIdir in PIdirs:
-        print PIdir
+        print(PIdir)
         if not os.path.isfile(os.path.join(PIdir, "Radiograph.png")):
             piHugeAnalysis(PIdir, basenm=r"tdyno2016_", simname='TDYNO_BAND')
         else:
-            print "Skipping..."
+            print("Skipping...")
