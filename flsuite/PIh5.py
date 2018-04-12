@@ -59,16 +59,16 @@ def readh5(fn, overwrite=False, shuffle=True):
     for i in range(ntraks):
         trakarr[i,:min(traklens[i], tlmax),:] = dat[edgeix[i]:edgeix[i] + min(traklens[i], tlmax),:]
 
+    if shuffle:
+        print("Shuffling particle track order...")
+        np.random.shuffle(trakarr) # Re-order particles randomly
+
     # Write your new tracks to file
-    print("Writing sorted tracks to new HDF5 file in the same folder...")
-    
+    print("Writing tracks to new HDF5 file in the same folder...")    
     with h5py.File(fn_out, 'w') as f:
         f.create_dataset('trakarr', data=trakarr)
         f.create_dataset('traklens', data=traklens)
         f.create_dataset('idarr', data=idarr)
-
-    if shuffle:
-        np.random.shuffle(trakarr) # Re-order particles randomly
 
     return trakarr
 
@@ -106,7 +106,8 @@ def moreinfo(trakarr):
 
 if __name__ == "__main__":
     #fn = r"C:\Users\Scott\Documents\temp\subdata.hdf5"
-    fn = r"C:\Users\Scott\Documents\temp\april2017\testPItrack\0250\tdyno2016_forced_hdf5_plt_cnt_0000"
+    #fn = r"C:\Users\Scott\Documents\temp\april2017\testPItrack\0250\tdyno2016_forced_hdf5_plt_cnt_0000"
+    fn = r"C:\Users\scott\Documents\temp\mar2018\Pinhole trajectories\15MeV_30ns\tdyno2016_forced_hdf5_plt_cnt_0000"
     trakarr = readh5(fn, overwrite=False)
     
     print("Getting more info...")
@@ -119,15 +120,15 @@ if __name__ == "__main__":
     ntplot=1000
     maxpathl = 5000.0
 
-    ct = pathl[:ntplot,:] > maxpathl # nan condition
+    #ct = pathl[:ntplot,:] > maxpathl # nan condition
     xvals = trakarr[:ntplot,:,1] # X values along trajectory
     yvals = trakarr[:ntplot,:,2]
     zvals = trakarr[:ntplot,:,3]
     lvals = pathl[:ntplot,:] # Path length values along trajectory
-    xvals[ct] = np.nan
-    yvals[ct] = np.nan
-    zvals[ct] = np.nan
-    lvals[ct] = np.nan
+    #xvals[ct] = np.nan
+    #yvals[ct] = np.nan
+    #zvals[ct] = np.nan
+    #lvals[ct] = np.nan
 
     # (JANKY) Extract X,Y,Z endpoints
     xend = np.zeros((xvals.shape[0])) # 1D array to hold endpoints in X
@@ -152,9 +153,9 @@ if __name__ == "__main__":
     fig = plt.figure(1)
     fig.clear()
     ax = fig.add_subplot(111)
-    ax.plot(xvals.T, zvals.T)
+    ax.plot(yvals.T, zvals.T)
     ax.set_aspect('equal')
-    ax.set_xlabel("X")
+    ax.set_xlabel("Y")
     ax.set_ylabel("Z")
     ax.set_title("Head-on view of particle tracks")
     #ax.set_ylim(-3000, 3000)
