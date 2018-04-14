@@ -314,36 +314,7 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             Hkz, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], kz, statistic='mean', bins=bins_cm)
             HJ, _, _, _ = binned_statistic_2d(xy_cm[:,0], xy_cm[:,1], J, statistic='mean', bins=bins_cm)
             # X, Y = np.meshgrid(xedges, yedges)
-            
-            with h5py.File(os.path.join(outdir, 'Radiograph.h5'), 'w') as f:
-                dset = f.create_dataset("Meankx", data=Hkx.T)
-                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic kx (see user guide)'
-                dset.attrs['units'] = 'G*cm'
-                dset = f.create_dataset("Meanky", data=Hky.T)
-                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic ky (see user guide)'
-                dset.attrs['units'] = 'G*cm'
-                dset = f.create_dataset("Meankz", data=Hkz.T)
-                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic kz (see user guide)'
-                dset.attrs['units'] = 'G*cm'
-                dset = f.create_dataset("MeanJ", data=Hkz.T)
-                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic J (see user guide)'
-                dset = f.create_dataset("Counts", data=H.T)
-                dset.attrs['Description'] = 'Proton counts per bin'
-                dset.attrs['units'] = 'protons'
-                dset = f.create_dataset("ax0edges_cm", data=xedges)
-                dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis0 dimension'
-                dset.attrs['units'] = 'cm'
-                dset = f.create_dataset("ax1edges_cm", data=yedges)
-                dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis1 dimension'
-                dset.attrs['units'] = 'cm'
-                f.attrs['SimTime_ns'] = time_ns
-                f.attrs['SimName'] = simname
-                f.attrs['ProtonEnergy_MeV'] = protMeV
-                f.attrs['BeamApertureAngle_degs'] = apdegs
-                f.attrs['Detector2Capsule_cm'] = dist_cm
-                f.attrs['BeamProtonCount'] = nprotons
-                f.attrs['BinWidth_um'] = bin_um
-                
+                          
             ## kx, ky, kz, J plots: Mean values        
             ### KX MEAN VALUE PLOT
             fig = plt.figure(5)
@@ -420,6 +391,36 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
             Efoot = ax.text(0.05, 0.03, Estring, fontsize=24, color='maroon', transform=ax.transAxes, horizontalalignment='left', verticalalignment='bottom') # Lower left within axis
             fig.text(0.99, 0.01, simname, horizontalalignment='right') # Lower right in figure units
             fig.savefig(os.path.join(outdir, "J_" + tlabel + ".png"), dpi=300)
+
+        with h5py.File(os.path.join(outdir, 'Radiograph.h5'), 'w') as f:
+            if useDiags:
+                dset = f.create_dataset("Meankx", data=Hkx.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic kx (see user guide)'
+                dset.attrs['units'] = 'G*cm'
+                dset = f.create_dataset("Meanky", data=Hky.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic ky (see user guide)'
+                dset.attrs['units'] = 'G*cm'
+                dset = f.create_dataset("Meankz", data=Hkz.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic kz (see user guide)'
+                dset.attrs['units'] = 'G*cm'
+                dset = f.create_dataset("MeanJ", data=Hkz.T)
+                dset.attrs['Description'] = 'Mean value of the FLASH proton imaging diagnostic J (see user guide)'
+            dset = f.create_dataset("Counts", data=H.T)
+            dset.attrs['Description'] = 'Proton counts per bin'
+            dset.attrs['units'] = 'protons'
+            dset = f.create_dataset("ax0edges_cm", data=xedges)
+            dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis0 dimension'
+            dset.attrs['units'] = 'cm'
+            dset = f.create_dataset("ax1edges_cm", data=yedges)
+            dset.attrs['Description'] = 'Positions of the edges of the histogram bins, along axis1 dimension'
+            dset.attrs['units'] = 'cm'
+            f.attrs['SimTime_ns'] = time_ns
+            f.attrs['SimName'] = simname
+            f.attrs['ProtonEnergy_MeV'] = protMeV
+            f.attrs['BeamApertureAngle_degs'] = apdegs
+            f.attrs['Detector2Capsule_cm'] = dist_cm
+            f.attrs['BeamProtonCount'] = nprotons
+            f.attrs['BinWidth_um'] = bin_um
 
         else:
             print("No velocity or Bx/By/Bz data found; skipping energy spectrum plots.")

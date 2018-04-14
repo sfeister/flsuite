@@ -10,7 +10,7 @@ import h5py
 import numpy as np
 import os
 import scipy.signal
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # TODO: Add a "shuffle=True" as default, that shuffles the particles
 def readh5(fn, overwrite=False, shuffle=True):
