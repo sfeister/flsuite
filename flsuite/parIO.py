@@ -153,27 +153,4 @@ def parMod(pardict, simdir='.', par_file='flash.par', outfn=None, bak=True):
     return 0
  
 if __name__ == "__main__":
-#    simdir = r"C:\Users\Scott\Documents\temp\yt tests"
-    simdir = r"."
-    par_file = "flash.par"
-    log_file = "tdyno2016.log" # As specified in the .par
-    basenm = "tdyno2016_" # As specified in the .par
-
-    #chknum, pltnum = getLogNums(basenm, log_file, simdir = simdir)
-    #print chknum, pltnum
-    #writeRePar(chknum, pltnum, par_file = par_file, simdir = simdir)
-
-    # Using the pardict functions
-    pardict = {}
-    d = {}
-    d["basenm"] = '"tdyno2016PI_"' # No spaces allowed here
-    d["pi_beamProtonEnergy_1"] = 14.7
-    d["pi_beamNumberOfProtons_1"] = 14050821
-    d["pi_detectorSideLength_1"] = 9.6 # Detector side length, in cm
-    d["pi_beamApertureAngle_1"] = 20.0 # Aperture angle, in degrees
-    d["pi_detectorSideTiltingAngle_1"] = 0.0
-    d["checkpointFileNumber"] = 220
-    d["pi_detectorDist2BeamCapsule_1"] = 40.77 # Distance from beam capsule to detector, in cm
-    (d["pi_beamCapsuleX_1"], d["pi_beamCapsuleY_1"], d["pi_beamCapsuleZ_1"]) = (0.0, -1.77, 0.4) # Capsule X,Y,Z position, in cm
-
-    parMod(d, simdir='.', par_file='tmp.par')
+    pass

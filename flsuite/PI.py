@@ -475,12 +475,4 @@ def piHugeAnalysis(PIdir, basenm=r"tdyno2016PI_", simname=None, outdir=None, pit
     return 0
     
 if __name__ == "__main__":
-    ## USER PARAMETERS
-    PIdirs = [x[0] for x in os.walk(r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE")][1:]
-    #PIdir = r"C:\Users\Scott\Documents\temp\TDYNO vids\PI junk\PINHOLE\PIN-10-1p0-15"
-    for PIdir in PIdirs:
-        print(PIdir)
-        if not os.path.isfile(os.path.join(PIdir, "Radiograph.png")):
-            piHugeAnalysis(PIdir, basenm=r"tdyno2016_", simname='TDYNO_BAND')
-        else:
-            print("Skipping...")
+    pass
