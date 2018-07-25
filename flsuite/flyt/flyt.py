@@ -8,7 +8,7 @@ Created by Scott Feister on Wed Oct 05 14:51:08 2016
 
 import numpy as np
 
-def get_simdata(ds, lev=None, smoothed=False):
+def get_simdata(ds, lev=None):
     """ Extract a yt covering grid, covering the domain of the entire FLASH simulation
     
     Gives access to underlying data (at fixed resolution) from a FLASH dataset.
