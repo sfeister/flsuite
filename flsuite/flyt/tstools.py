@@ -89,6 +89,7 @@ matplotlib.use('Agg') # Headless plotting
 import matplotlib.pyplot as plt
 import yt
 yt.enable_parallelism() # Tap into yt's mpi4py parallelism (e.g. now can call via mpirun -np 10 python <blah>.py)
+yt.funcs.mylog.setLevel(30) # This sets the output notification threshold to 30, WARNING. Default is 20, INFO.
 import flsuite as fl
 import flsuite.sftools as sf
 import numbers
@@ -138,14 +139,13 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, ignorepkl=False):
             print("Unpickling anlsT directly, skipping analysis of HDF5 files.")
             print("NOTE: Did you want re-analyze values in HDF5 files? If so, delete anlsT.p and run again.")
             
-        try:
-            with open(os.path.join(outdir, "anlsT.p")) as f:
-                anlsT = pickle.load(f)
-                
-            if yt.is_root():
+            try:
+                with open(os.path.join(outdir, "anlsT.p"), "wb") as f:
+                    anlsT = pickle.load(f)
+                    
                 print("anlsT.p file successfully unpickled.")
-        except:
-            print("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file and run again.")
+            except:
+                print("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file and run again.")
     
     else: # If anlsT.p does not exist, use anlzD to generate anlsT from the HDF5 files
         numfiles = len(ts)
