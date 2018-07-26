@@ -137,12 +137,15 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, ignorepkl=False):
             print("anlsT.p file found in " + str(outdir))
             print("Unpickling anlsT directly, skipping analysis of HDF5 files.")
             print("NOTE: Did you want re-analyze values in HDF5 files? If so, delete anlsT.p and run again.")
-            try:
-                with open(os.path.join(outdir, "anlsT.p")) as f:
-                    anlsT = pickle.load(f)
+            
+        try:
+            with open(os.path.join(outdir, "anlsT.p")) as f:
+                anlsT = pickle.load(f)
+                
+            if yt.is_root():
                 print("anlsT.p file successfully unpickled.")
-            except:
-                print("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file and run again.")
+        except:
+            print("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file and run again.")
     
     else: # If anlsT.p does not exist, use anlzD to generate anlsT from the HDF5 files
         numfiles = len(ts)
