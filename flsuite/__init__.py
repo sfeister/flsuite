@@ -1,1 +1,1 @@
-""" Scott's FLASH Suite of Python Tools """
+""" Scott's FLASH Suite, Python Tools """

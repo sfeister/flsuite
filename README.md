@@ -1,6 +1,6 @@
-# flsuite (Scott's FLASH Suite of Python Tools)
+# flsuite (Scott's FLASH Suite)
 
-The **flsuite** is a set of Python tools related to FLASH simulations. They may be useful for certain stages of creating and analyzing the simulations.
+**flsuite** is a set of Python tools (and bash scripts) related to FLASH simulations. They may be useful for certain stages of creating and analyzing the simulations.
 
 The primary use case has been personal, but I'm sharing these tools in case others find them useful.
 

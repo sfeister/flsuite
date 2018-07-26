@@ -12,7 +12,7 @@ setup(
     name='flsuite',
     version='0.0.1a',
 
-    description="Scott's FLASH Suite of Python Tools",
+    description="Scott's FLASH Suite",
     long_description=long_description,
 
     # The project's main homepage.
