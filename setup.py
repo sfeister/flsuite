@@ -93,5 +93,5 @@ setup(
     #    'console_scripts': [
     #        'ffpngs=',
     #    ],
-    },
+    #},
 )

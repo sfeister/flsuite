@@ -51,6 +51,12 @@ cd flsuite/
 python setup.py install
 ```
 
+**NOTE**: If you are on a cluster where you do not have write permissions to the python installation directory, you may need to add "--user" to all of the previous calls. E.g.
+```bash
+pip install --user git+https://github.com/phyzicist/flsuite.git
+```
+
+
 ## Command-line tools
 A useful bash script called "ffpngs" will be added to your system path upon installation. It is a wrapper for ffmpeg that turns a directory of PNG files into a cross-platform .mp4 movie file. This is convenient when trying to share between Powerpoint, MacOS, Linux, etc.
 Requires bash shell (i.e. works natively with Linux or MacOS) and ffmpeg.
