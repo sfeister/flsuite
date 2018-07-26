@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 morefields.py: Add a few useful derived fields in future-loaded datasets

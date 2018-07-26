@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 PIh5.py: Deal with the proton imaging particle tracks found optionally in HDF5 files of >FLASH4.4

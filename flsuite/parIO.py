@@ -1,4 +1,4 @@
-#!/bin/python2.7
+#!/bin/python3
 # -*- coding: utf-8 -*-
 """
 parIO.py: Do input and output on flash.par configuration files

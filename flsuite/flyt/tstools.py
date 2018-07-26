@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 tstools.py: Tools for manipulating YT Time Series (bundles of FLASH datasets)

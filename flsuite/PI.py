@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 PI.py: Proton imaging tools; read and make plots of proton imaging outputs made by FLASH

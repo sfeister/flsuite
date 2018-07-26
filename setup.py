@@ -21,7 +21,7 @@ setup(
     # Author details
     author='Scott Feister',
     author_email='sfeister@uchicago.edu',
-
+ 
     # Choose your license
     license='MIT',
 
