@@ -24,8 +24,14 @@ them as
  ```bash
 pip install numpy scipy matplotlib h5py yt
 ```
-One could also use [Anaconda Python](https://anaconda.org/anaconda/python) to
-install them as
+
+**NOTE**: If you are on a cluster where you do not have write permissions to the python installation directory, you may need to add "--user" to your pip and setup calls here and below. E.g.
+```bash
+pip install --user numpy scipy matplotlib h5py yt
+```
+
+As an alternate to pip, one could also use [Anaconda Python](https://anaconda.org/anaconda/python) to
+install the dependencies
 ```bash
 conda install numpy scipy matplotlib h5py
 conda install -c conda-forge yt
@@ -51,17 +57,11 @@ cd flsuite/
 python setup.py install
 ```
 
-**NOTE**: If you are on a cluster where you do not have write permissions to the python installation directory, you may need to add "--user" to all of the previous calls. E.g.
-```bash
-pip install --user git+https://github.com/phyzicist/flsuite.git
-```
-
+If you installed with the "--user" flag and "~/.local/bin" is not on your system path, add it to your path (e.g. by appending the line "PATH=$PATH:$HOME/.local/bin" to "~/.bashrc"). Documentation can be read by calling "ffpngs -h" from a bash terminal.
 
 ## Command-line tools
-A useful bash script called "ffpngs" will be added to your system path upon installation. It is a wrapper for ffmpeg that turns a directory of PNG files into a cross-platform .mp4 movie file. This is convenient when trying to share between Powerpoint, MacOS, Linux, etc.
+A useful bash script called "ffpngs" will be added to /bin upon installation (or ~/.local/bin, if --user flag was used). It is a wrapper for ffmpeg that turns a directory of PNG files into a cross-platform .mp4 movie file. This is convenient when trying to share between Powerpoint, MacOS, Linux, etc.
 Requires bash shell (i.e. works natively with Linux or MacOS) and ffmpeg.
-
-Documentation can be read by calling "ffpngs -h" from a bash terminal.
 
 ## flsuite Python package
 Useful subpackages include:

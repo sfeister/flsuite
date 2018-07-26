@@ -10,6 +10,85 @@ See two examples towards the bottom of this document.
 Note: Make sure to use FLASH setup flags to increase beam and pulse count as needed.
 E.g. ./setup LaserSlab -auto ed_maxPulses=60 ed_maxBeams=20 ed_maxPulseSections=60
 
+############# EXAMPLE SCRIPT #############
+
+from flsuite.parLaser import parLaser, parLasers
+import numpy as np
+
+# Example 1: Three lasers, each with different parameters
+las1 = parLaser(1, laslbl="Second Laser, 808 nm")
+las1.lens = [20, 20, 30]
+las1.targ = [20, 30, 40]
+las1.powers = np.array([1,2,3,4,5])
+las1.times = np.array([10,11,12,13,14])
+las1.wavelength = 0.808
+
+las2 = parLaser(2, laslbl="Second Laser, Many rays")
+las2.lens = [15, 15, 23]
+las2.targ = [22, 22, 41]
+las2.powers = np.array([1,2,3,4,5,6,7])
+las2.times = np.array([10,11,12,13,14,15,16])
+las2.numberOfRays = 10000
+
+las3 = parLaser(3, laslbl="Third Laser, Gaussian profile")
+las3.lens = [14, 14, 16]
+las3.targ = [40, 50, 52]
+las3.powers = np.array([2,2.5,3])
+las3.times = np.array([10,11,12])
+
+las3.crossSectionFunctionType = "gaussian2D" # 2D Gaussian Beam
+las3.gaussianExponent = 4.0 # 4.0 for supergaussian profile
+las3.gaussianRadiusMajor = 0.048
+las3.gaussianRadiusMinor = 0.048
+
+par = str(las1)
+par += str(las2)
+par += str(las3)
+
+print("\n\n\n~~~~~~~ EXAMPLE 1 OUTPUT")
+print(par)
+
+## Example 2: Make a whole bunch of the same laser, but with lens at varying x value
+par = ''
+
+for i in range(10):
+    lasnum = i + 1
+    las = parLaser(lasnum)
+    
+    las.lens = [i*10, 0, 0] # This is the only thing changing between the ten lasers!
+    las.targ = [5, 5, 5]
+    las.powers = np.array([1,2,3,4,5])
+    las.times = np.array([10,11,12,13,14])
+    las.numberOfRays = 10000
+    las.crossSectionFunctionType = "gaussian2D" # 2D Gaussian Beam
+    las.gaussianExponent = 4.0 # 4.0 for supergaussian profile
+    las.gaussianRadiusMajor = 0.048
+    las.gaussianRadiusMinor = 0.048
+    
+    par += str(las)
+
+print("\n\n\n~~~~~~~ EXAMPLE 2 OUTPUT")
+print(par)
+
+## Example 3: Same as Example 2, but using the parLasers class
+l = parLasers(10) # Laser list
+
+for i in range(len(l)):
+    l[i].lens = [i*10, 0, 0] # This is the only thing changing between the ten lasers!
+    l[i].targ = [5, 5, 5]
+    l[i].powers = np.array([1,2,3,4,5])
+    l[i].times = np.array([10,11,12,13,14])
+    l[i].numberOfRays = 10000
+    l[i].crossSectionFunctionType = "gaussian2D" # 2D Gaussian Beam
+    l[i].gaussianExponent = 4.0 # 4.0 for supergaussian profile
+    l[i].gaussianRadiusMajor = 0.048
+    l[i].gaussianRadiusMinor = 0.048
+
+print("\n\n\n~~~~~~~ EXAMPLE 3 OUTPUT")
+print(l)
+
+######### END OF EXAMPLE SCRIPT #########
+
 """
 
 import numpy as np
@@ -229,80 +308,6 @@ class parLaser:
         with open(file, mode) as f:
             f.write(self)
         
-
 if __name__ == "__main__":
-    ## EXAMPLE USAGE
-    
-    # Example 1: Three lasers, each with different parameters
-    las1 = parLaser(1, laslbl="Second Laser, 808 nm")
-    las1.lens = [20, 20, 30]
-    las1.targ = [20, 30, 40]
-    las1.powers = np.array([1,2,3,4,5])
-    las1.times = np.array([10,11,12,13,14])
-    las1.wavelength = 0.808
-    
-    las2 = parLaser(2, laslbl="Second Laser, Many rays")
-    las2.lens = [15, 15, 23]
-    las2.targ = [22, 22, 41]
-    las2.powers = np.array([1,2,3,4,5,6,7])
-    las2.times = np.array([10,11,12,13,14,15,16])
-    las2.numberOfRays = 10000
-    
-    las3 = parLaser(3, laslbl="Third Laser, Gaussian profile")
-    las3.lens = [14, 14, 16]
-    las3.targ = [40, 50, 52]
-    las3.powers = np.array([2,2.5,3])
-    las3.times = np.array([10,11,12])
-    
-    las3.crossSectionFunctionType = "gaussian2D" # 2D Gaussian Beam
-    las3.gaussianExponent = 4.0 # 4.0 for supergaussian profile
-    las3.gaussianRadiusMajor = 0.048
-    las3.gaussianRadiusMinor = 0.048
-
-    par = str(las1)
-    par += str(las2)
-    par += str(las3)
-
-    print("\n\n\n~~~~~~~ EXAMPLE 1 OUTPUT")
-    print(par)
-    
-    ## Example 2: Make a whole bunch of the same laser, but with lens at varying x value
-    par = ''
-
-    for i in range(10):
-        lasnum = i + 1
-        las = parLaser(lasnum)
-        
-        las.lens = [i*10, 0, 0] # This is the only thing changing between the ten lasers!
-        las.targ = [5, 5, 5]
-        las.powers = np.array([1,2,3,4,5])
-        las.times = np.array([10,11,12,13,14])
-        las.numberOfRays = 10000
-        las.crossSectionFunctionType = "gaussian2D" # 2D Gaussian Beam
-        las.gaussianExponent = 4.0 # 4.0 for supergaussian profile
-        las.gaussianRadiusMajor = 0.048
-        las.gaussianRadiusMinor = 0.048
-        
-        par += str(las)
-
-    print("\n\n\n~~~~~~~ EXAMPLE 2 OUTPUT")
-    print(par)
-    
-    ## Example 3: Same as Example 2, but using the parLasers class
-    l = parLasers(10) # Laser list
-    
-    for i in range(len(l)):
-        l[i].lens = [i*10, 0, 0] # This is the only thing changing between the ten lasers!
-        l[i].targ = [5, 5, 5]
-        l[i].powers = np.array([1,2,3,4,5])
-        l[i].times = np.array([10,11,12,13,14])
-        l[i].numberOfRays = 10000
-        l[i].crossSectionFunctionType = "gaussian2D" # 2D Gaussian Beam
-        l[i].gaussianExponent = 4.0 # 4.0 for supergaussian profile
-        l[i].gaussianRadiusMajor = 0.048
-        l[i].gaussianRadiusMinor = 0.048
-    
-    print("\n\n\n~~~~~~~ EXAMPLE 3 OUTPUT")
-    print(l)
-
+    pass
         
