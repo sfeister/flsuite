@@ -125,9 +125,13 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, ignorepkl=False):
     Output of anlzD function (which you must define):
         anlsD: Dictionary compiling output from a single dataset.
 
+    If run in parallel, only the root will output the correct copy of anlsT; all others will output {}.
+    
     Examples of these functions, which would be included in your code, are included in the help string at the top of this file.
     """
-
+    
+    anlsT = {}
+    
     if (not ignorepkl) and os.path.exists(os.path.join(outdir, "anlsT.p")): # Attempt to load anlsT from anlsT.p
         if yt.is_root():
             print("anlsT.p file found in " + str(outdir))
