@@ -92,13 +92,6 @@ def subdir(folder, name):
     """ Make a subdirectory in the specified folder, if it doesn't already exist"""
     subpath = os.path.join(folder,name)
     if not os.path.exists(subpath):
-        os.mkdir(subpath)
-    return subpath
-
-def subdir2(folder, name):
-    """ Make a subdirectory in the specified folder, if it doesn't already exist. Tries to be more robust than subdir."""
-    subpath = os.path.join(folder,name)
-    if not os.path.exists(subpath):
         try:
             os.mkdir(subpath)
         except:
@@ -106,7 +99,10 @@ def subdir2(folder, name):
                 raise
     return subpath
 
-    
+def subdir2(folder, name):
+    """ Duplicate of subdir."""
+    return subdir(folder, name)
+
 # CHUNKING/UNCHUNKING TOOLS
 def chunkFx(mylist, n):
     """Break list into fixed, n-sized chunks. The final element of the new list will be n-sized or less"""

@@ -39,18 +39,30 @@ One way to install **flsuite** is via
 pip install git+https://github.com/phyzicist/flsuite.git
 ```
 
-Another way to install **flsuite** is via
+To update **flsuite** at a later date
+```bash
+pip install --upgrade git+https://github.com/phyzicist/flsuite.git
+```
+
+An alternative way to install **flsuite** is via
 ```bash
 git clone https://github.com/phyzicist/flsuite.git
 cd flsuite/
 python setup.py install
 ```
 
-## Updating/Uninstalling
-To update **flsuite** at a later date
-```bash
-pip install --upgrade git+https://github.com/phyzicist/flsuite.git
-```
+## Command-line tools
+A useful bash script is "ffpngs". It is a wrapper for ffmpeg that turns a directory of PNG files into a cross-platform .mp4 movie file.
+Requires bash shell (i.e. works natively with Linux or MacOS)
+
+## flsuite Python package
+Useful subpackages include:
+* flsuite.parLaser (includes a class "parLaser" to define multiple lasers for a flash.par file)
+* flsuite.parIO (includes general methods for reading and writing from flash.par files)
+* flsuite.flyt.flyt (includes the function "get_simdata", a tool for extracting uniform-res arrays from FLASH sims using Yt)
+* flsuite.sftools (includes the function "getH5Outs" which gets a sorted list of FLASH-generated HDF5 plotfiles or checkpoint files in a directory, and the function "subdir" which is a painless way to make a subdirectory while checking if it already exists)
+
+## Uninstalling
 
 To uninstall **flsuite**
 ```shell
