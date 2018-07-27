@@ -29,8 +29,7 @@ import numpy as np
 import flsuite.sftools as sf
 import flsuite.flyt.tstools as tst
 
-def anlzD(ds, outdir='.'):
-    anlsD = {}
+def anlzD(ds, anlsD, outdir):
     anlsD['times_ns'] = ds.current_time.in_units('ns').v
 
     reg = ds.all_data() # Region of interest
@@ -58,7 +57,7 @@ def anlzD(ds, outdir='.'):
 
     return anlsD
 
-def plotT(anlsT, outdir='.'):
+def plotT(anlsT, outdir):
     plt.figure(1)
     plt.clf()
     plt.plot(anlsT['times_ns'], anlsT['Bav_code']*np.sqrt(4*np.pi)*1e-3, label='All space')
@@ -110,16 +109,14 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
     
     Inputs for this function:
         ts:  Yt time series
-        anlzD: Function defined with inputs (ds, outdir='.') and output anlsD (dict of values with keys). Run on every dataset.
+        anlzD: Function defined with required inputs (ds, anlsD, outdir). Runs on every dataset. Can be written to modify "anlsD" dict in-place by adding values and plot images into "outdir".
         outdir: A directory into which to save your plots and anlsT.p pickle file.
-        plotT: (Optional) Function defined with inputs (anlsT, outdir='.') and no particular output. Run once at end of analysis.
+        plotT: (Optional) Function defined with inputs (anlsT, outdir). Uses anlsT to make plots into directory 'outdir'. Run once at end of analysis.
         trypkl: If True (default), will attempt to load the "anlsT.p" pickle file in the directory if it already exists (skipping HDF5 re-analysis). If False, will ignore and overwrite this file.
     
-    Outputs of this function:
-        anlsT: Dictionary compiling outputs from time-series, keys matching those of anlsD.
-   
-    Output of anlzD function (which you must define):
+    More info on dictionaries used of this function:
         anlsD: Dictionary compiling output from a single dataset.
+        anlsT: Dictionary compiling outputs from time-series, keys matching those of anlsD.
 
     If run in parallel, only the root will output the correct copy of anlsT; all others will output {}.
     
@@ -132,7 +129,7 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
     usepfile = trypkl and os.path.exists(pfile) # True or False, should we try and use the pickle file anlsT.p? Depends on option 'trypkl' and if that file exists.
     if usepfile: # Attempt to load anlsT from anlsT.p
         if yt.is_root():
-            print("Found pickle file in output directory: " + str(pfile))
+            print("Found pickle file in output directory: " + str(pfile))            
             print("Unpickling anlsT.p. Skipping anlzD function, analysis of HDF5 files (set anlzT option 'trypkl=False' to force re-analysis).")
             
             try:
@@ -141,7 +138,12 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
             except Exception as e:
                 print("Caught this error: " + repr(e))
                 raise Exception("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file or set anlzT option 'trypkl=False' and run again.")
-    
+            
+            if anlsT['anlzD'] == anlzD:
+                print("No changes to anlzD!")
+            if anlsT['ts_outputs'] == ts.outputs:
+                print("No changes to list of files!")
+            
     else: # If anlsT.p does not exist or ignore flag is set, use anlzD to generate anlsT from the HDF5 files
         numfiles = len(ts)
 
@@ -153,12 +155,13 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
 
         for sto, ds in ts.piter(storage=storage): # Iterate over datasets ds in time-series ts
             print("Reading file:" + str(ds))
-            anlsD = anlzD(ds, outdir=outdir) # It would be nice not to require the outdir argument
-            
-            if not isinstance(anlsD, dict): # If for some reason it returned something other than a dictionary
-                anlsD = {'anlzD_out':anlsD}
-            
+            anlsD = {}
             anlsD["ds_id"] = str(ds)
+            anlsD['ds_time'] = ds.current_time.v
+            anlzD(ds, anlsD, outdir) # It would be nice not to require the outdir argument
+            
+            if not isinstance(anlsD, dict): # If for some reason anlzD mangled the anlsD array into something other than a dictionary
+                anlsD = {'anlzD_out':anlsD}
             
             sto.result = anlsD
             sto.result_id = str(ds)
@@ -186,6 +189,9 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
             for k in anlsD:
                 anlsT[k][i] = anlsD[k]
         
+        anlsT['anlzD'] = anlzD # Store the function anlzD for later comparison
+        anlsT['ts_outputs'] = ts.outputs # Store a list of the input files for later comparison
+        
         if yt.is_root():
             # Dump result to pickled output
             print("All files completed and analysis outputs re-organized. Pickling anlsT...")
@@ -196,7 +202,7 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
     if yt.is_root():
         if callable(plotT):
             print("Making final plots (calling plotT function)...")
-            plotT(anlsT, outdir=outdir)
+            plotT(anlsT, outdir)
             
         print("Time-series analysis complete! Outputs stored under " + str(outdir))
         
