@@ -118,6 +118,8 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
         anlsD: Dictionary compiling output from a single dataset.
         anlsT: Dictionary compiling outputs from time-series, keys matching those of anlsD.
 
+    With trypkl=True, will nonetheless check to see if any obvious changes have occurred in the anlzD or HDF5 filename list before continuing onto the plotT function.
+    
     If run in parallel, only the root will output the correct copy of anlsT; all others will output {}.
     
     Examples of these functions, which would be included in your code, are included in the help string at the top of this file.
@@ -130,7 +132,7 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
     if usepfile: # Attempt to load anlsT from anlsT.p
         if yt.is_root():
             print("Found pickle file in output directory: " + str(pfile))            
-            print("Unpickling anlsT.p. Skipping anlzD function, analysis of HDF5 files (set anlzT option 'trypkl=False' to force re-analysis).")
+            print("Unpickling anlsT.p.")
             
             try:
                 anlsT = pickle.load( open( pfile, "rb" ) )                    
@@ -139,12 +141,18 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
                 print("Caught this error: " + repr(e))
                 raise Exception("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file or set anlzT option 'trypkl=False' and run again.")
             
-            if anlsT['anlzD'] == anlzD:
-                print("No changes to anlzD!")
-            if anlsT['ts_outputs'] == ts.outputs:
-                print("No changes to list of files!")
-            
-    else: # If anlsT.p does not exist or ignore flag is set, use anlzD to generate anlsT from the HDF5 files
+            if anlsT['ts_outputs'] != ts.outputs:
+                print("HDF5 filename list changed, so forcing a complete re-analysis.")
+                usepfile = False
+            elif anlsT['anlzD_co_code'] != anlzD.__code__.co_code: # Check if bytecode of anlzD has changed (will catch some but not all changes, e.g. will catch new lines of code but miss changes in strings or numbers)
+                print("Bytecode changes detected in anlzD, so forcing a complete re-analysis.")
+                usepfile = False
+            else:
+                pass
+                
+    if usepfile: # Use the pickle file directly
+        print("Skipping anlzD function, analysis of HDF5 files (set anlzT option 'trypkl=False' to force re-analysis).")
+    else: # Use anlzD to generate anlsT from the HDF5 files
         numfiles = len(ts)
 
         if yt.is_root():
@@ -189,7 +197,7 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
             for k in anlsD:
                 anlsT[k][i] = anlsD[k]
         
-        anlsT['anlzD'] = anlzD # Store the function anlzD for later comparison
+        anlsT['anlzD_co_code'] = anlzD.__code__.co_code # Store bytecode instructions for the function anlzD for later comparison
         anlsT['ts_outputs'] = ts.outputs # Store a list of the input files for later comparison
         
         if yt.is_root():
