@@ -65,12 +65,13 @@ Requires bash shell (i.e. works natively with Linux or MacOS) and ffmpeg.
 
 ## flsuite Python package
 Useful subpackages include:
-* flsuite.parLaser (includes a class "parLasers" to programmatically define multiple lasers for a flash.par file)
+* flsuite.parLaser (includes a class "parLasers" to programmatically define multiple lasers for a flash.par file). Usage examples found in "examples/laserexamples.py"
+* flsuite.flyt.tstools (parallel analysis of FLASH HDF5 files in a tidy package). Usage examples found in "examples/tsexample1-3.py"
 * flsuite.parIO (includes general methods for reading and writing from flash.par files)
 * flsuite.flyt.flyt (includes the function "get_simdata", a tool for extracting uniform-res arrays from FLASH sims using Yt)
 * flsuite.sftools (includes the function "getH5Outs" which gets a sorted list of FLASH-generated HDF5 plotfiles or checkpoint files in a directory, and the function "subdir" which is a painless way to make a subdirectory while checking if it already exists)
 
-Limited documentation for these modules appears in the source code.
+Limited documentation for these modules appears in the source code, as well as in the "examples" folder of this repository.
  
 ## Uninstalling
 

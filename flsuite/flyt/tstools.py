@@ -87,6 +87,7 @@ import yt
 yt.enable_parallelism() # Tap into yt's mpi4py parallelism (e.g. now can call via mpirun -np 10 python <blah>.py)
 yt.funcs.mylog.setLevel(30) # This sets the output notification threshold to 30, WARNING. Default is 20, INFO.
 import numbers
+import inspect
 
 # TODO: Incorporate this into the new analysis schema
 def tsinf(ts):
@@ -149,10 +150,17 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
                 print("Bytecode changes detected in anlzD, so forcing a complete re-analysis.")
                 usepfile = False
             else:
-                pass
+                try:
+                    if anlsT['anlzD_source'] != inspect.getsource(anlzD):
+                        print("Source code changes detected in anlzD, so forcing a complete re-analysis.")
+                        usepfile = False
+                except:
+                    pass
+
                 
     if usepfile: # Use the pickle file directly
-        print("Skipping anlzD function, analysis of HDF5 files (set anlzT option 'trypkl=False' to force re-analysis).")
+        if yt.is_root():
+            print("Skipping anlzD function, analysis of HDF5 files (set anlzT option 'trypkl=False' to force re-analysis).")
     else: # Use anlzD to generate anlsT from the HDF5 files
         numfiles = len(ts)
 
@@ -200,7 +208,11 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
         
         anlsT['anlzD_co_code'] = anlzD.__code__.co_code # Store bytecode instructions for the function anlzD for later comparison
         anlsT['ts_outputs'] = ts.outputs # Store a list of the input files for later comparison
-        
+        try:
+            anlsT['anlzD_source'] = inspect.getsource(anlzD) # Store the source code of anlzD for comparison (only works if anlzD is defined in a file)
+        except:
+            pass
+
         if yt.is_root():
             # Dump result to pickled output
             print("All files completed and analysis outputs re-organized. Pickling anlsT...")

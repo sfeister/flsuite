@@ -153,7 +153,7 @@ class parLasers(list):
                     
         """
         with open(file, mode) as f:
-            f.write(self)
+            f.write(str(self))
     
 class parLaser:
     """ A class containing the parameters of a single beam and pulse flash.par (runtime parameters) input """
@@ -306,7 +306,7 @@ class parLaser:
                     
         """
         with open(file, mode) as f:
-            f.write(self)
+            f.write(str(self))
         
 if __name__ == "__main__":
     pass
