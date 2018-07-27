@@ -118,7 +118,8 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
         anlsD: Dictionary compiling output from a single dataset.
         anlsT: Dictionary compiling outputs from time-series, keys matching those of anlsD.
 
-    With trypkl=True, will nonetheless check to see if any obvious changes have occurred in the anlzD or HDF5 filename list before continuing onto the plotT function.
+    With trypkl=False, will always re-analyze the HDF5 files.
+    With trypkl=True, will nonetheless check to see if pickle file exists, then unpickle and check if any obvious changes have occurred in the anlzD or HDF5 filename list before continuing onto the plotT function.
     
     If run in parallel, only the root will output the correct copy of anlsT; all others will output {}.
     
