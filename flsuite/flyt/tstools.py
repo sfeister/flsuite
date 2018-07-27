@@ -70,7 +70,7 @@ def plotT(anlsT, outdir='.'):
 
     
 ts = yt.load("/my/flash/outs/lasslab_hdf_plt_cnt_????")
-anlsT = tst.anlzT(ts, anlzD, outdir="/my/plot/path", plotT=plotT)
+anlsT = tst.anlzT(ts, anlzD, outdir="/my/plot/path", plotT=plotT, trypkl=True)
 
 ######### END OF EXAMPLE SCRIPT #########
 """
@@ -84,14 +84,9 @@ if (sys.version_info > (3, 0)):
 else:
     # Python 2 code in this block
     import cPickle as pickle
-import matplotlib
-matplotlib.use('Agg') # Headless plotting
-import matplotlib.pyplot as plt
 import yt
 yt.enable_parallelism() # Tap into yt's mpi4py parallelism (e.g. now can call via mpirun -np 10 python <blah>.py)
 yt.funcs.mylog.setLevel(30) # This sets the output notification threshold to 30, WARNING. Default is 20, INFO.
-import flsuite as fl
-import flsuite.sftools as sf
 import numbers
 
 # TODO: Incorporate this into the new analysis schema
@@ -109,7 +104,7 @@ def tsinf(ts):
 
 # TODO: Better documentation
 # TODO: Homogenize string outputs from anlsD such that they become numpy arrays (?)
-def anlzT(ts, anlzD, outdir='.', plotT=None, ignorepkl=False):
+def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
     """(*AnaLyZe Time series*) Walks through the time series and does a custom analysis "anlzone(ds)" IN PARALLEL on all datasets in time series
     Follows walkthrough at: http://yt-project.org/doc/analyzing/parallel_computation.html?highlight=parallel#parallelization-over-multiple-datasets-including-time-series
     
@@ -118,7 +113,7 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, ignorepkl=False):
         anlzD: Function defined with inputs (ds, outdir='.') and output anlsD (dict of values with keys). Run on every dataset.
         outdir: A directory into which to save your plots and anlsT.p pickle file.
         plotT: (Optional) Function defined with inputs (anlsT, outdir='.') and no particular output. Run once at end of analysis.
-        ignorepkl: If True, will ignore the existence of another "anlsT.p" file in the directory. If False (default), will attempt to load the "anlsT.p" file using pickle if it exists.
+        trypkl: If True (default), will attempt to load the "anlsT.p" pickle file in the directory if it already exists (skipping HDF5 re-analysis). If False, will ignore and overwrite this file.
     
     Outputs of this function:
         anlsT: Dictionary compiling outputs from time-series, keys matching those of anlsD.
@@ -132,22 +127,22 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, ignorepkl=False):
     """
     
     anlsT = {}
+    pfile = os.path.join(outdir, "anlsT.p")
     
-    if (not ignorepkl) and os.path.exists(os.path.join(outdir, "anlsT.p")): # Attempt to load anlsT from anlsT.p
+    usepfile = trypkl and os.path.exists(pfile) # True or False, should we try and use the pickle file anlsT.p? Depends on option 'trypkl' and if that file exists.
+    if usepfile: # Attempt to load anlsT from anlsT.p
         if yt.is_root():
-            print("anlsT.p file found in " + str(outdir))
-            print("Unpickling anlsT directly, skipping analysis of HDF5 files.")
-            print("NOTE: Did you want re-analyze values in HDF5 files? If so, delete anlsT.p and run again.")
+            print("Found pickle file in output directory: " + str(pfile))
+            print("Unpickling anlsT.p. Skipping anlzD function, analysis of HDF5 files (set anlzT option 'trypkl=False' to force re-analysis).")
             
             try:
-                with open(os.path.join(outdir, "anlsT.p"), "wb") as f:
-                    anlsT = pickle.load(f)
-                    
-                print("anlsT.p file successfully unpickled.")
-            except:
-                print("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file and run again.")
+                anlsT = pickle.load( open( pfile, "rb" ) )                    
+                print("Successfully unpickled anlsT.p.")
+            except Exception as e:
+                print("Caught this error: " + repr(e))
+                raise Exception("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file or set anlzT option 'trypkl=False' and run again.")
     
-    else: # If anlsT.p does not exist, use anlzD to generate anlsT from the HDF5 files
+    else: # If anlsT.p does not exist or ignore flag is set, use anlzD to generate anlsT from the HDF5 files
         numfiles = len(ts)
 
         if yt.is_root():
@@ -194,13 +189,13 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, ignorepkl=False):
         if yt.is_root():
             # Dump result to pickled output
             print("All files completed and analysis outputs re-organized. Pickling anlsT...")
-            pickle.dump( anlsT, open( os.path.join(outdir, "anlsT.p"), "wb" ) )
+            pickle.dump( anlsT, open( pfile, "wb" ) )
     
 
     # Make the plots
     if yt.is_root():
         if callable(plotT):
-            print("Making final plots...")
+            print("Making final plots (calling plotT function)...")
             plotT(anlsT, outdir=outdir)
             
         print("Time-series analysis complete! Outputs stored under " + str(outdir))
