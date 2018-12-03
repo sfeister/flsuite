@@ -133,8 +133,8 @@ class parLasers(list):
         par += "# ~~ E.g.:\n"
         par += "#    ./setup LaserSlab -auto ed_maxPulses={} ed_maxBeams={} ed_maxPulseSections={}\n\n".format(len(self), len(self), self.maxPulseSections())
 
-        par += 'ed_numberOfPulses = ' + str(len(self))
-        par += 'ed_numberOfBeams = ' + str(len(self))
+        par += 'ed_numberOfPulses = ' + str(len(self)) + "\n"
+        par += 'ed_numberOfBeams = ' + str(len(self)) + "\n"
         
         # Iterate over the pulse/beam combos
         for i in range(len(self)):
