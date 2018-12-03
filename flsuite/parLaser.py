@@ -293,7 +293,10 @@ class parLaser:
         keys_remaining = set(self.__dict__.keys()) - set(["lasnum", "laslbl", "lens", "targ", "powers", "times"]) # A list of properties of the parLaser object, excluding those items that we just wrote into the par string
         for key in keys_remaining:
             if getattr(self, key) is not None:
-                par += "ed_{}_{} = {}\n".format(key, self.lasnum, getattr(self, key))
+                if isinstance(getattr(self,key), str):
+                    par += 'ed_{}_{} = "{}"\n'.format(key, self.lasnum, getattr(self, key))                    
+                else:
+                    par += 'ed_{}_{} = {}\n'.format(key, self.lasnum, getattr(self, key))
         
         return par
     
