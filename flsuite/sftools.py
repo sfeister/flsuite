@@ -86,6 +86,7 @@ def getH5Outs(folder, basenm = 'lasslab_', h5type = 'plt'):
     # Sort the field names by their "####" number    
     idx = np.argsort(nums) # Get a list of sorted indices such that the filenames will be sorted correctly by time step
     fns = np.array(fns)[idx].tolist() # Convert filenames list to a numpy string array for advanced indexing, then convert back to a python list
+    nums = np.array(nums)[idx].tolist() # Convert nums list to a numpy array for advanced indexing, then convert back to a python list
     return fns, nums
 
 def subdir(folder, name):
