@@ -86,8 +86,12 @@ else:
 import yt
 yt.enable_parallelism() # Tap into yt's mpi4py parallelism (e.g. now can call via mpirun -np 10 python <blah>.py)
 yt.funcs.mylog.setLevel(30) # This sets the output notification threshold to 30, WARNING. Default is 20, INFO.
+from mpi4py import MPI
 import numbers
 import inspect
+
+comm = MPI.COMM_WORLD
+rank = comm.rank
 
 # TODO: Incorporate this into the new analysis schema
 def tsinf(ts):
@@ -143,7 +147,7 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
                 print("Caught this error: " + repr(e))
                 raise Exception("Unpickling anlsT.p failed. Perhaps it was pickled using another version of Python? Delete file or set anlzT option 'trypkl=False' and run again.")
             
-            if anlsT['ts_outputs'] != ts.outputs:
+            if not np.array_equal(np.array(anlsT['ts_outputs']), np.array(ts.outputs)): # Are ts.outputs and ts_outputs the same? Don't assume lists or numpy arrays as input, force to numpy arrays for comparisons
                 print("HDF5 filename list changed, so forcing a complete re-analysis.")
                 usepfile = False
             elif anlsT['anlzD_co_code'] != anlzD.__code__.co_code: # Check if bytecode of anlzD has changed (will catch some but not all changes, e.g. will catch new lines of code but miss changes in strings or numbers)
@@ -156,7 +160,8 @@ def anlzT(ts, anlzD, outdir='.', plotT=None, trypkl=True):
                         usepfile = False
                 except:
                     pass
-
+                    
+    usepfile = comm.bcast(usepfile, root=0)
                 
     if usepfile: # Use the pickle file directly
         if yt.is_root():
