@@ -41,36 +41,13 @@ las3.gaussianExponent = 4.0 # 4.0 for supergaussian profile
 las3.gaussianRadiusMajor = 0.048
 las3.gaussianRadiusMinor = 0.048
 
-par = str(las1)
-par += str(las2)
-par += str(las3)
-
-print("\n\n\n~~~~~~~ EXAMPLE 1 OUTPUT")
-print(par)
+las1.write('laser1.txt', 'w')
+las2.write('laser2.txt', 'w')
+las3.write('laser3.txt', 'w')
+print("Three lasers written to 'laser1.txt', 'laser2.txt', 'laser3.txt'")
 
 ## Example 2: Make a whole bunch of the same laser, but with lens at varying x value
-par = ''
-
-for i in range(10):
-    lasnum = i + 1
-    las = parLaser(lasnum)
-    
-    las.lens = [i*10, 0, 0] # This is the only thing changing between the ten lasers!
-    las.targ = [5, 5, 5]
-    las.powers = np.array([1,2,3,4,5])
-    las.times = np.array([10,11,12,13,14])
-    las.numberOfRays = 10000
-    las.crossSectionFunctionType = "gaussian2D" # 2D Gaussian Beam
-    las.gaussianExponent = 4.0 # 4.0 for supergaussian profile
-    las.gaussianRadiusMajor = 0.048
-    las.gaussianRadiusMinor = 0.048
-    
-    par += str(las)
-
-print("\n\n\n~~~~~~~ EXAMPLE 2 OUTPUT")
-print(par)
-
-## Example 3: Same as Example 2, but using the parLasers class
+# Uses the "parlasers" class
 l = parLasers(10) # Laser list
 
 for i in range(len(l)):
@@ -84,8 +61,8 @@ for i in range(len(l)):
     l[i].gaussianRadiusMajor = 0.048
     l[i].gaussianRadiusMinor = 0.048
 
-print("\n\n\n~~~~~~~ EXAMPLE 3 OUTPUT")
-print(l)
+l.write('tenlasers.txt', 'w')
+print("Ten lasers written to 'tenlasers.txt'")
 
 ######### END OF EXAMPLE SCRIPT #########
 

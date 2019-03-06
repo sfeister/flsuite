@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-laserexamples.py: Show three different ways to create laser strings for a flash.par file
+laserexamples.py: Show two different ways to create laser strings for a flash.par file
 
 Created by Scott Feister on Fri Jul 27 15:37:49 2018
 """
