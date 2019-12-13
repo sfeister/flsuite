@@ -17,6 +17,7 @@ CHANGELOG:
            Added sound speed, mach number
 2016-11-29 Added nion, nele from FLASH user manual. And Reynolds number, etc.; wait... were these already given by derived fields of the yt modules?
 2019-09-25 Renamed the field 'ye  ' as 'ye' so that the code will work with yt version 3.4.1
+2019-12-13 Added a try/except for distinguishing between 'ye  ' and 'ye', since apparently this is causing problems even in yt 3.5.1 with an old FLASH file (the space is still showing up in 'ye  ')
            
 TODO:
 * Test validity of sound speed, Mach number derived fields
@@ -54,7 +55,11 @@ def _abar(field, data): # Average atomic mass (amu) of an ion
     
 @derived_field(name="zbar", units="dimensionless")
 def _zbar(field, data): # Average ionization of an ion
-    return data['ye'] / data['sumy']
+    try:
+        return data['ye'] / data['sumy']
+    except:
+        return data['ye  '] / data['sumy']
+    
 
 @derived_field(name="cs", units="cm/s")
 def _cs(field, data): # Sound speed, calculated from Petros' 2016 paper table; converted temps to eV
