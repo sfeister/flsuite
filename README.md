@@ -42,17 +42,17 @@ After installing the required packages, we may install **flsuite**.
 
 One way to install **flsuite** is via
 ```bash
-pip install git+https://github.com/phyzicist/flsuite.git
+pip install git+https://github.com/sfeister/flsuite.git
 ```
 
 To update **flsuite** at a later date
 ```bash
-pip install --upgrade git+https://github.com/phyzicist/flsuite.git
+pip install --upgrade git+https://github.com/sfeister/flsuite.git
 ```
 
 An alternative way to install **flsuite** is via
 ```bash
-git clone https://github.com/phyzicist/flsuite.git
+git clone https://github.com/sfeister/flsuite.git
 cd flsuite/
 python setup.py install
 ```
